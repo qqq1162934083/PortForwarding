@@ -1,0 +1,68 @@
+<Window x:Name="window"
+        x:Class="PortForwarding.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PortForwarding"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded"
+        Title="端口转发" Height="558" Width="963.5">
+    <Window.Resources>
+        <Style x:Key="portForwardingItemStyle" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="40"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="tbx_col1" IsReadOnly="{Binding ReadOnly}" Grid.Column="0" Text="{Binding Col1}"></TextBox>
+                            <TextBox x:Name="tbx_col2" IsReadOnly="{Binding ReadOnly}" Grid.Column="1" Text="{Binding Col2}"></TextBox>
+                            <TextBox x:Name="tbx_col3" IsReadOnly="{Binding ReadOnly}" Grid.Column="2" Text="{Binding Col3}"></TextBox>
+                            <TextBox x:Name="tbx_col4" IsReadOnly="{Binding ReadOnly}" Grid.Column="3" Text="{Binding Col4}"></TextBox>
+                            <Button x:Name="btn_refresh_switchModify" Grid.Column="4" Content="{Binding Col5}" Click="btn_refresh_switchModify_Click"></Button>
+                            <Button x:Name="btn_new_delete" Grid.Column="5" Content="{Binding Col6}" Click="btn_new_delete"></Button>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <Menu>
+                <MenuItem Header="选项">
+                    <MenuItem x:Name="menuItem_saveConfigAs" Header="配置另存为" Click="menuItem_saveConfigAs_Click"></MenuItem>
+                    <MenuItem x:Name="menuItem_loadConfig" Header="加载配置" Click="menuItem_loadConfig_Click"></MenuItem>
+                    <MenuItem x:Name="menuItem_appendConfig" Header="附加配置" Click="menuItem_appendConfig_Click"></MenuItem>
+                    <MenuItem x:Name="menuItem_removeConfig" Header="移除配置" Click="menuItem_removeConfig_Click"></MenuItem>
+                </MenuItem>
+            </Menu>
+            <TextBox x:Name="tbx_adapterMappingIp" IsReadOnly="True" Grid.Row="1" AcceptsReturn="True"/>
+            <ListBox Grid.Row="2" x:Name="lbx_mappingList" ItemContainerStyle="{StaticResource portForwardingItemStyle}"/>
+            <TextBox Grid.Row="3" x:Name="tbx_console" IsReadOnly="True" TextWrapping="Wrap" Text="" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+            <StatusBar Grid.Row="4">
+                <StatusBarItem>
+                    <TextBox Width="120" IsReadOnly="True" Background="Transparent" BorderThickness="0" Text="{Binding ElementName=window, Path=Version, StringFormat=Version {0}}"></TextBox>
+                </StatusBarItem>
+            </StatusBar>
+        </Grid>
+    </Grid>
+</Window>
