@@ -34,6 +34,61 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <!--<Style x:Key="lbx_configPanel_Style" TargetType="ListBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBox">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="110"/>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="110"/>
+                                    <ColumnDefinition Width="60"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox IsReadOnly="True" TextAlignment="Center">IP地址</TextBox>
+                                <TextBox Grid.Column="1" TextAlignment="Center" IsReadOnly="True">端口</TextBox>
+                                <TextBox Grid.Column="2" TextAlignment="Center" IsReadOnly="True"></TextBox>
+                                <TextBox Grid.Column="3" TextAlignment="Center" IsReadOnly="True">IP地址</TextBox>
+                                <TextBox Grid.Column="4" TextAlignment="Center" IsReadOnly="True">端口</TextBox>
+                            </Grid>
+                            <StackPanel Grid.Row="1" IsItemsHost="True"></StackPanel>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="110"/>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="110"/>
+                                            <ColumnDefinition Width="60"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox IsReadOnly="True" Text="{Binding SrcIpAddr}"></TextBox>
+                                        <TextBox Grid.Column="1" TextAlignment="Center" IsReadOnly="True" Text="{Binding SrcPort}"></TextBox>
+                                        <TextBox Grid.Column="2" TextAlignment="Center" IsReadOnly="True"></TextBox>
+                                        <TextBox Grid.Column="3" TextAlignment="Center" IsReadOnly="True" Text="{Binding DestIpAddr}"></TextBox>
+                                        <TextBox Grid.Column="4" TextAlignment="Center" IsReadOnly="True" Text="{Binding DestPort}"></TextBox>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>-->
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -56,7 +111,46 @@
                 </MenuItem>
             </Menu>
             <TextBox x:Name="tbx_adapterMappingIp" IsReadOnly="True" Grid.Row="1" AcceptsReturn="True"/>
-            <ListBox Grid.Row="2" x:Name="lbx_mappingList" ItemContainerStyle="{StaticResource portForwardingItemStyle}"/>
+            <TabControl Grid.Row="2" TabStripPlacement="Left">
+                <TabItem Header="列&#xD;&#xA;表">
+                    <ListBox x:Name="lbx_mappingList" ItemContainerStyle="{StaticResource portForwardingItemStyle}"/>
+                </TabItem>
+                <TabItem Header="配&#xD;&#xA;置">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Button x:Name="btn_selectConfig2ConfigPanel" Grid.Row="0" Content="选择配置加载" Margin="15,10,0,10" HorizontalAlignment="Left" Click="btn_selectConfig2ConfigPanel_Click"></Button>
+                        <!--<ListBox x:Name="lbx_configPanel" Grid.Row="1" Style="{StaticResource lbx_configPanel_Style}">
+                            
+                        </ListBox>-->
+                        <DataGrid Grid.Row="1" x:Name="dataGrid_configPanel" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="IP地址" IsReadOnly="True" Binding="{Binding Path=SrcIpAddr}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="端口" IsReadOnly="True" Binding="{Binding Path=SrcPort}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="IP地址" IsReadOnly="True" Binding="{Binding Path=DestIpAddr}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="端口" IsReadOnly="True" Binding="{Binding Path=DestPort}"></DataGridTextColumn>
+                                <DataGridTemplateColumn>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Button Content="启用">
+                                                    <!--<Binding>
+                                                        <Binding.Converter>
+                                                            <local:CaseConverter></local:CaseConverter>
+                                                        </Binding.Converter>
+                                                    </Binding>-->
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
             <TextBox Grid.Row="3" x:Name="tbx_console" IsReadOnly="True" TextWrapping="Wrap" Text="" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
             <StatusBar Grid.Row="4">
                 <StatusBarItem>

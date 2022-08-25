@@ -2,6 +2,7 @@ using Microsoft.VisualBasic.FileIO;
 using MyTool;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -263,21 +264,7 @@ namespace PortForwarding
             FileDialogUtils.SelectOpenFile(r => r.Filter = "配置文件|*.cfg", r =>
             {
                 ReloadMappingList();
-                var configContent = File.ReadAllText(r.FileName);
-                var configMappings = configContent.Split(new string[] { Environment.NewLine + Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .Select(section =>
-                {
-                    var items = section.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
-                    if (items.Length != 4) throw new Exception("error config");
-                    return new PortForwardingMappingModel()
-                    {
-                        SrcIpAddr = items[0],
-                        SrcPort = int.Parse(items[1]),
-                        DestIpAddr = items[2],
-                        DestPort = int.Parse(items[3])
-                    };
-                }).ToArray();
+                var configMappings = ReadConfigMappingList(r.FileName);
 
                 //删除所有现有映射
                 var mappingList = GetMappingList();
@@ -290,27 +277,33 @@ namespace PortForwarding
                 ReloadMappingList();
             });
         }
+       
+        private List<PortForwardingMappingModel> ReadConfigMappingList(string configFilePath)
+        {
+            var configContent = File.ReadAllText(configFilePath);
+            var configMappings = configContent.Split(new string[] { Environment.NewLine + Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim())
+            .Select(section =>
+            {
+                var items = section.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
+                if (items.Length != 4) throw new Exception("error config");
+                return new PortForwardingMappingModel()
+                {
+                    SrcIpAddr = items[0],
+                    SrcPort = int.Parse(items[1]),
+                    DestIpAddr = items[2],
+                    DestPort = int.Parse(items[3])
+                };
+            }).ToList();
+            return configMappings;
+        }
 
         private void menuItem_appendConfig_Click(object sender, RoutedEventArgs e)
         {
             FileDialogUtils.SelectOpenFile(r => r.Filter = "配置文件|*.cfg", r =>
             {
                 ReloadMappingList();
-                var configContent = File.ReadAllText(r.FileName);
-                var configMappings = configContent.Split(new string[] { Environment.NewLine + Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .Select(section =>
-                {
-                    var items = section.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
-                    if (items.Length != 4) throw new Exception("error config");
-                    return new PortForwardingMappingModel()
-                    {
-                        SrcIpAddr = items[0],
-                        SrcPort = int.Parse(items[1]),
-                        DestIpAddr = items[2],
-                        DestPort = int.Parse(items[3])
-                    };
-                }).ToArray();
+                var configMappings = ReadConfigMappingList(r.FileName);
 
                 //添加配置中的映射
                 foreach (var mapping in configMappings)
@@ -356,6 +349,15 @@ namespace PortForwarding
                 }
 
                 ReloadMappingList();
+            });
+        }
+
+        private void btn_selectConfig2ConfigPanel_Click(object sender, RoutedEventArgs e)
+        {
+            FileDialogUtils.SelectOpenFile(r => r.Filter = "配置文件|*.cfg", r =>
+            {
+                dataGrid_configPanel.Items.Clear();
+                dataGrid_configPanel.ItemsSource = new ObservableCollection<PortForwardingMappingModel>(ReadConfigMappingList(r.FileName));
             });
         }
     }

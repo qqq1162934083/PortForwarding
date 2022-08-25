@@ -60,6 +60,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CaseConverter.cs" />
     <Compile Include="FileDialogUtils.cs" />
     <Compile Include="PortForwardingSrcEqualityComparer.cs" />
     <Compile Include="Ui\MsgBox.xaml.cs">
