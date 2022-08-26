@@ -28,6 +28,20 @@ namespace PortForwarding
     public partial class MainWindow : Window
     {
         public string Version { get => Assembly.GetExecutingAssembly().GetName().Version.ToString(); set { } }
+
+        //public List<PortForwardingMappingModel> PortForwardingMappingList
+        //{
+        //    get => _portForwardingMappingList;
+        //    set
+        //    {
+        //        _portForwardingMappingList = value;
+        //    }
+        //}
+        //private List<PortForwardingMappingModel> _portForwardingMappingList;
+        //private event Action<List<PortForwardingMappingModel>> _portForwardingMappingListChanged { get;set; }
+
+        private List<PortForwardingMappingModel> PortForwardingMappingList { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();

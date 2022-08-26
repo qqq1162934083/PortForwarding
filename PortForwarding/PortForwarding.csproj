@@ -63,6 +63,7 @@
     <Compile Include="ConfigPanelCaseConverter.cs" />
     <Compile Include="ConfigPanelViewModel.cs" />
     <Compile Include="FileDialogUtils.cs" />
+    <Compile Include="PortForwardingMappingManager.cs" />
     <Compile Include="PortForwardingSrcEqualityComparer.cs" />
     <Compile Include="Ui\MsgBox.xaml.cs">
       <DependentUpon>MsgBox.xaml</DependentUpon>
