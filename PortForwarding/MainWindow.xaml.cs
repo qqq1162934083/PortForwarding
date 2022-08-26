@@ -31,8 +31,6 @@ namespace PortForwarding
         public MainWindow()
         {
             InitializeComponent();
-            //LoadMappingList(null);
-            //ReloadMappingList();
             Task.Run(() =>
             {
                 while (true)
@@ -89,6 +87,14 @@ namespace PortForwarding
             if (mappingList != null)
                 mappingList.ForEach(x => lbx_mappingList.Items.Add(new PortForwardingMappingViewModel(x)));
 
+            //更新配置页面
+            if (dataGrid_configPanel.Items != null && dataGrid_configPanel.Items.Count > 0)
+            {
+                foreach (ConfigPanelViewModel item in dataGrid_configPanel.Items)
+                {
+                    item.Enabled = mappingList.Any(x => x.SrcIpAddr == item.SrcIpAddr && x.SrcPort == item.SrcPort);
+                }
+            }
         }
         private void NewMapping(string srcIpAddr, int srcPort, string destIpAddr, int destPort)
         {
@@ -277,7 +283,7 @@ namespace PortForwarding
                 ReloadMappingList();
             });
         }
-       
+
         private List<PortForwardingMappingModel> ReadConfigMappingList(string configFilePath)
         {
             var configContent = File.ReadAllText(configFilePath);
@@ -356,9 +362,30 @@ namespace PortForwarding
         {
             FileDialogUtils.SelectOpenFile(r => r.Filter = "配置文件|*.cfg", r =>
             {
-                dataGrid_configPanel.Items.Clear();
-                dataGrid_configPanel.ItemsSource = new ObservableCollection<PortForwardingMappingModel>(ReadConfigMappingList(r.FileName));
+                var enabledMappingList = GetMappingList();
+                var viewModelItemList = ReadConfigMappingList(r.FileName).Select(x => new ConfigPanelViewModel(x)
+                {
+                    Enabled = enabledMappingList.Any(y => y.SrcIpAddr == x.SrcIpAddr && y.SrcPort == x.SrcPort)
+                }).ToList();
+                dataGrid_configPanel.ItemsSource = new ObservableCollection<ConfigPanelViewModel>(viewModelItemList);
             });
+        }
+
+        private void btn_enabledConfigItem_Click(object sender, RoutedEventArgs e)
+        {
+            var btn = (Button)sender;
+            var data = (ConfigPanelViewModel)btn.DataContext;
+            data.Enabled = !data.Enabled;
+            var mapping = data.Mapping;
+            if (data.Enabled)
+            {
+                NewMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
+            }
+            else
+            {
+                DeleteMapping(mapping.SrcIpAddr, mapping.SrcPort);
+            }
+            ReloadMappingList();
         }
     }
 }

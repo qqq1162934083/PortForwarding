@@ -60,7 +60,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="CaseConverter.cs" />
+    <Compile Include="ConfigPanelCaseConverter.cs" />
+    <Compile Include="ConfigPanelViewModel.cs" />
     <Compile Include="FileDialogUtils.cs" />
     <Compile Include="PortForwardingSrcEqualityComparer.cs" />
     <Compile Include="Ui\MsgBox.xaml.cs">
@@ -72,6 +73,7 @@
     <Compile Include="Ui\VariableBox.xaml.cs">
       <DependentUpon>VariableBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\ReflectUtils.cs" />
     <Compile Include="VisualTreeUtils.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -89,6 +89,7 @@
                 </Setter.Value>
             </Setter>
         </Style>-->
+        <local:ConfigPanelCaseConverter x:Key="configPanelCaseConverter"/>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -112,36 +113,34 @@
             </Menu>
             <TextBox x:Name="tbx_adapterMappingIp" IsReadOnly="True" Grid.Row="1" AcceptsReturn="True"/>
             <TabControl Grid.Row="2" TabStripPlacement="Left">
-                <TabItem Header="列&#xD;&#xA;表">
+                <TabItem Header="概&#xD;&#xA;览&#xD;&#xA;视&#xD;&#xA;图">
                     <ListBox x:Name="lbx_mappingList" ItemContainerStyle="{StaticResource portForwardingItemStyle}"/>
                 </TabItem>
-                <TabItem Header="配&#xD;&#xA;置">
+                <TabItem Header="配&#xD;&#xA;置&#xD;&#xA;视&#xD;&#xA;图">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto"/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <Button x:Name="btn_selectConfig2ConfigPanel" Grid.Row="0" Content="选择配置加载" Margin="15,10,0,10" HorizontalAlignment="Left" Click="btn_selectConfig2ConfigPanel_Click"></Button>
-                        <!--<ListBox x:Name="lbx_configPanel" Grid.Row="1" Style="{StaticResource lbx_configPanel_Style}">
-                            
-                        </ListBox>-->
-                        <DataGrid Grid.Row="1" x:Name="dataGrid_configPanel" AutoGenerateColumns="False">
+                        <DataGrid x:Name="dataGrid_configPanel" AutoGenerateColumns="False">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="IP地址" IsReadOnly="True" Binding="{Binding Path=SrcIpAddr}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="端口" IsReadOnly="True" Binding="{Binding Path=SrcPort}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="IP地址" IsReadOnly="True" Binding="{Binding Path=DestIpAddr}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="端口" IsReadOnly="True" Binding="{Binding Path=DestPort}"></DataGridTextColumn>
-                                <DataGridTemplateColumn>
+                                <DataGridTextColumn Width="110" Header="IP地址" IsReadOnly="True" Binding="{Binding Path=SrcIpAddr}"></DataGridTextColumn>
+                                <DataGridTextColumn Width="60" Header="端口" IsReadOnly="True" Binding="{Binding Path=SrcPort}"></DataGridTextColumn>
+                                <DataGridTextColumn Width="110" Header="IP地址" IsReadOnly="True" Binding="{Binding Path=DestIpAddr}"></DataGridTextColumn>
+                                <DataGridTextColumn Width="60" Header="端口" IsReadOnly="True" Binding="{Binding Path=DestPort}"></DataGridTextColumn>
+                                <DataGridTemplateColumn IsReadOnly="True" Header="状态" Width="40">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid Background="{Binding Path=Enabled,Converter={StaticResource configPanelCaseConverter},ConverterParameter=color}"></Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn IsReadOnly="True">
+                                    <DataGridTemplateColumn.Header>
+                                        <Grid>
+                                            <Button x:Name="btn_selectConfig2ConfigPanel" Padding="10,0,10,0" Content="选择配置加载" Margin="5,0,5,0" Click="btn_selectConfig2ConfigPanel_Click"></Button>
+                                        </Grid>
+                                    </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid>
-                                                <Button Content="启用">
-                                                    <!--<Binding>
-                                                        <Binding.Converter>
-                                                            <local:CaseConverter></local:CaseConverter>
-                                                        </Binding.Converter>
-                                                    </Binding>-->
-                                                </Button>
+                                                <Button x:Name="btn_enabledConfigItem" HorizontalAlignment="Center" Padding="10,0,10,0" Content="{Binding ElementName=btn_enabledConfigItem,Path=Tag,Converter={StaticResource configPanelCaseConverter}}" Tag="{Binding Path=Enabled}" Click="btn_enabledConfigItem_Click"/>
                                             </Grid>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
