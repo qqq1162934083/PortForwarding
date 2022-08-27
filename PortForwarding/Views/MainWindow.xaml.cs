@@ -30,12 +30,13 @@ namespace PortForwarding
         public string Version { get => Assembly.GetExecutingAssembly().GetName().Version.ToString(); set { } }
         public PortForwardingMappingManager MappingMgr { get; set; } = new PortForwardingMappingManager();
 
-        private List<PortForwardingMappingModel> PortForwardingMappingList { get; set; }
-
         public MainWindow()
         {
-            MappingMgr.Refresh();
             InitializeComponent();
+            MappingMgr.ConsoleOutput += WriteConsole;
+            MappingMgr.MappingListChanged += Load_dataGrid_mappingList;
+            MappingMgr.MappingListChanged += Load_dataGrid_configPanel;
+            Task.Run(() => MappingMgr.Refresh());
             Task.Run(() =>
             {
                 while (true)
@@ -46,77 +47,30 @@ namespace PortForwarding
             });
         }
 
-        private void ReloadMappingList()
+        private void Load_dataGrid_mappingList(List<PortForwardingMappingModel> mappingList)
         {
-            LoadMappingList(mappingList);
-        }
-        private void LoadMappingList(List<PortForwardingMappingModel> mappingList)
-        {
-            lbx_mappingList.Items.Clear();
-            lbx_mappingList.Items.Add(new PortForwardingMappingViewModel(null)
+            Dispatcher.Invoke(() =>
             {
-                Col1 = "IP地址",
-                Col2 = "端口",
-                Col3 = "IP地址",
-                Col4 = "端口",
-                Col5 = "刷 新",
-                Col6 = "新增",
-                RowType = RowType.Header
+                dataGrid_mappingList.ItemsSource = mappingList.Select(x => new PortForwardingMappingViewModel(x)).ToList();
             });
-            if (mappingList != null)
-                mappingList.ForEach(x => lbx_mappingList.Items.Add(new PortForwardingMappingViewModel(x)));
-
-            //更新配置页面
-            if (dataGrid_configPanel.Items != null && dataGrid_configPanel.Items.Count > 0)
-            {
-                foreach (ConfigPanelViewModel item in dataGrid_configPanel.Items)
-                {
-                    item.Enabled = mappingList.Any(x => x.SrcIpAddr == item.SrcIpAddr && x.SrcPort == item.SrcPort);
-                }
-            }
         }
+
+        private void Load_dataGrid_configPanel(List<PortForwardingMappingModel> mappingList)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                dataGrid_configPanel.ItemsSource = mappingList.Select(x => new ConfigPanelViewModel(x)).ToList();
+            });
+        }
+
         private void WriteConsole(string text)
         {
-            var nowTime = DateTime.Now;
-            tbx_console.AppendText(nowTime.ToString("[yyyy-MM-dd HH:mm:ss fff] > ") + text + Environment.NewLine);
-            tbx_console.ScrollToEnd();
-        }
-
-        private void btn_refresh_switchModify_Click(object sender, RoutedEventArgs e)
-        {
-            var btn = (Button)sender;
-            var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
-            if (viewModel.RowType == RowType.Header)
+            Dispatcher.Invoke(() =>
             {
-                ReloadMappingList();
-            }
-            else
-            {
-                viewModel.Editabled = !viewModel.Editabled;
-                for (var i = 1; i <= 4; i++)
-                {
-                    var textBox = VisualTreeUtils.FindChildren<TextBox>((FrameworkElement)VisualTreeHelper.GetParent(btn), "tbx_col" + i);
-                    textBox.IsReadOnly = !viewModel.Editabled;
-                }
-                btn.Content = viewModel.Editabled ? "完成修改" : "开始修改";
-                if (!viewModel.Editabled)//点击完成修改时
-                {
-                    var mappingModel = viewModel.MappingModel;
-                    if (mappingModel != null)
-                    {
-                        DeleteMapping(mappingModel.SrcIpAddr, mappingModel.SrcPort);
-                    }
-                    mappingModel = new PortForwardingMappingModel()
-                    {
-                        SrcIpAddr = viewModel.Col1,
-                        SrcPort = int.Parse(viewModel.Col2),
-                        DestIpAddr = viewModel.Col3,
-                        DestPort = int.Parse(viewModel.Col4)
-                    };
-                    NewMapping(mappingModel.SrcIpAddr, mappingModel.SrcPort, mappingModel.DestIpAddr, mappingModel.DestPort);
-                    ReloadMappingList();
-                }
-            }
+                var nowTime = DateTime.Now;
+                tbx_console.AppendText(nowTime.ToString("[yyyy-MM-dd HH:mm:ss fff] > ") + text + Environment.NewLine);
+                tbx_console.ScrollToEnd();
+            });
         }
 
         private void ReloadIpAddr()
@@ -166,43 +120,42 @@ namespace PortForwarding
             }
         }
 
-        private void btn_new_delete(object sender, RoutedEventArgs e)
-        {
-            var btn = (Button)sender;
-            var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
-            if (viewModel.RowType == RowType.Header)
-            {
-                var mappingModel = new PortForwardingMappingModel
-                {
-                    SrcIpAddr = "0.0.0.0",
-                    SrcPort = 0,
-                    DestIpAddr = "0.0.0.0",
-                    DestPort = 0
-                };
-                PortForwardingMappingViewModel newItem;
-                var itemIndex = 1;
-                lbx_mappingList.Items.Insert(itemIndex, newItem = new PortForwardingMappingViewModel(mappingModel)
-                {
-                    Col5 = "完成修改",
-                    Editabled = true,
-                    ReadOnly = false,
-                    MappingModel = null,
-                });
-            }
-            else
-            {
-                var mappingModel = viewModel?.MappingModel;
-                if (mappingModel != null)
-                {
-                    DeleteMapping(mappingModel.SrcIpAddr, mappingModel.SrcPort);
-                    ReloadMappingList();
-                }
-            }
-        }
+        //private void btn_new_delete(object sender, RoutedEventArgs e)
+        //{
+        //    var btn = (Button)sender;
+        //    var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
+        //    if (viewModel.RowType == RowType.Header)
+        //    {
+        //        var mappingModel = new PortForwardingMappingModel
+        //        {
+        //            SrcIpAddr = "0.0.0.0",
+        //            SrcPort = 0,
+        //            DestIpAddr = "0.0.0.0",
+        //            DestPort = 0
+        //        };
+        //        PortForwardingMappingViewModel newItem;
+        //        var itemIndex = 1;
+        //        lbx_mappingList.Items.Insert(itemIndex, newItem = new PortForwardingMappingViewModel(mappingModel)
+        //        {
+        //            Col5 = "完成修改",
+        //            Editabled = true,
+        //            ReadOnly = false,
+        //            MappingModel = null,
+        //        });
+        //    }
+        //    else
+        //    {
+        //        var mappingModel = viewModel?.MappingModel;
+        //        if (mappingModel != null)
+        //        {
+        //            DeleteMapping(mappingModel.SrcIpAddr, mappingModel.SrcPort);
+        //            ReloadMappingList();
+        //        }
+        //    }
+        //}
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            ReloadMappingList();
         }
 
         private void menuItem_saveConfigAs_Click(object sender, RoutedEventArgs e)
@@ -210,7 +163,6 @@ namespace PortForwarding
             //保存配置
             FileDialogUtils.SelectSaveFile(x => x.Filter = "配置文件|*.cfg", x =>
             {
-                ReloadMappingList();
                 var doYes = true;
                 if (File.Exists(x.FileName))
                 {
@@ -221,33 +173,26 @@ namespace PortForwarding
                 if (!doYes) return;
 
                 File.Create(x.FileName).Dispose();
-                var configContent = string.Join(Environment.NewLine + Environment.NewLine, GetMappingList().Select(r => $"{r.SrcIpAddr}{Environment.NewLine}{r.SrcPort}{Environment.NewLine}{r.DestIpAddr}{Environment.NewLine}{r.DestPort}"));
+                var configContent = string.Join(Environment.NewLine + Environment.NewLine, MappingMgr.MappingList.Select(r => $"{r.SrcIpAddr}{Environment.NewLine}{r.SrcPort}{Environment.NewLine}{r.DestIpAddr}{Environment.NewLine}{r.DestPort}"));
                 //写入文件
                 File.WriteAllText(x.FileName, configContent);
             });
-        }
-
-        private List<PortForwardingMappingModel> GetMappingList()
-        {
-            return lbx_mappingList.Items.Cast<PortForwardingMappingViewModel>().Where(r => r.MappingModel != null).Select(r => r.MappingModel).ToList();
         }
 
         private void menuItem_loadConfig_Click(object sender, RoutedEventArgs e)
         {
             FileDialogUtils.SelectOpenFile(r => r.Filter = "配置文件|*.cfg", r =>
             {
-                ReloadMappingList();
                 var configMappings = ReadConfigMappingList(r.FileName);
 
                 //删除所有现有映射
-                var mappingList = GetMappingList();
-                mappingList.ForEach(x => DeleteMapping(x.SrcIpAddr, x.SrcPort));
+                var mappingList = MappingMgr.MappingList;
+                mappingList.ForEach(x => MappingMgr.RemoveMapping(x.SrcIpAddr, x.SrcPort));
                 //添加配置中的映射
                 foreach (var mapping in configMappings)
                 {
-                    NewMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
+                    MappingMgr.AddMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
                 }
-                ReloadMappingList();
             });
         }
 
@@ -275,15 +220,13 @@ namespace PortForwarding
         {
             FileDialogUtils.SelectOpenFile(r => r.Filter = "配置文件|*.cfg", r =>
             {
-                ReloadMappingList();
                 var configMappings = ReadConfigMappingList(r.FileName);
 
                 //添加配置中的映射
                 foreach (var mapping in configMappings)
                 {
-                    NewMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
+                    MappingMgr.AddMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
                 }
-                ReloadMappingList();
             });
         }
 
@@ -291,9 +234,8 @@ namespace PortForwarding
         {
             FileDialogUtils.SelectOpenFile(r => r.Filter = "配置文件|*.cfg", r =>
             {
-                ReloadMappingList();
                 //获取当前映射
-                var mappings = GetMappingList();
+                var mappings = MappingMgr.MappingList;
 
                 //获取配置映射
                 var configContent = File.ReadAllText(r.FileName);
@@ -318,10 +260,9 @@ namespace PortForwarding
                 //删除映射
                 foreach (var mapping in toRemoveMappings)
                 {
-                    DeleteMapping(mapping.SrcIpAddr, mapping.SrcPort);
+                    MappingMgr.RemoveMapping(mapping.SrcIpAddr, mapping.SrcPort);
                 }
 
-                ReloadMappingList();
             });
         }
 
@@ -329,7 +270,7 @@ namespace PortForwarding
         {
             FileDialogUtils.SelectOpenFile(r => r.Filter = "配置文件|*.cfg", r =>
             {
-                var enabledMappingList = GetMappingList();
+                var enabledMappingList = MappingMgr.MappingList;
                 var viewModelItemList = ReadConfigMappingList(r.FileName).Select(x => new ConfigPanelViewModel(x)
                 {
                     Enabled = enabledMappingList.Any(y => y.SrcIpAddr == x.SrcIpAddr && y.SrcPort == x.SrcPort)
@@ -346,13 +287,67 @@ namespace PortForwarding
             var mapping = data.Mapping;
             if (data.Enabled)
             {
-                NewMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
+                MappingMgr.AddMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
             }
             else
             {
-                DeleteMapping(mapping.SrcIpAddr, mapping.SrcPort);
+                MappingMgr.RemoveMapping(mapping.SrcIpAddr, mapping.SrcPort);
             }
-            ReloadMappingList();
+        }
+
+        private void btn_menuItemHeaderOption_Click(object sender, RoutedEventArgs e)
+        {
+            var btn = (Button)sender;
+            var obj = VisualTreeHelper.GetParent(btn);
+
+        }
+
+        private void btn_mappingList_switchEditStatus_Click(object sender, RoutedEventArgs e)
+        {
+            var btn = (Button)sender;
+            var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
+            var index = dataGrid_mappingList.Items.IndexOf(viewModel);
+            if (index < 0) throw new Exception("行序号获取失败");
+            var ss = VisualTreeHelper.GetParent(btn);
+            var ss_childs = VisualTreeUtils.GetChildrens<FrameworkElement>(ss);
+            var ss1 = VisualTreeHelper.GetParent(ss);
+            var ss1_childs = VisualTreeUtils.GetChildrens<FrameworkElement>(ss1);
+            var ss2 = VisualTreeHelper.GetParent(ss1);
+            var ss2_childs = VisualTreeUtils.GetChildrens<FrameworkElement>(ss2);
+            var ss3 = VisualTreeHelper.GetParent(ss2);
+            var ss3_childs = VisualTreeUtils.GetChildrens<FrameworkElement>(ss3);
+            var ss4 = VisualTreeHelper.GetParent(ss3);
+            var ss4_childs = VisualTreeUtils.GetChildrens<FrameworkElement>(ss4);
+            //dataGrid_mappingList
+            viewModel.Editing = !viewModel.Editing;
+            //btn.Content = viewModel.ing ? "完成修改" : "开始修改";
+            //for (var i = 1; i <= 4; i++)
+            //{
+            //    var textBox = VisualTreeUtils.FindChildren<TextBox>((FrameworkElement)VisualTreeHelper.GetParent(btn), "tbx_col" + i);
+            //    textBox.IsReadOnly = !viewModel.Editabled;
+            //}
+            //if (!viewModel.Editabled)//点击完成修改时
+            //{
+            //    var mappingModel = viewModel.MappingModel;
+            //    if (mappingModel != null)
+            //    {
+            //        DeleteMapping(mappingModel.SrcIpAddr, mappingModel.SrcPort);
+            //    }
+            //    mappingModel = new PortForwardingMappingModel()
+            //    {
+            //        SrcIpAddr = viewModel.Col1,
+            //        SrcPort = int.Parse(viewModel.Col2),
+            //        DestIpAddr = viewModel.Col3,
+            //        DestPort = int.Parse(viewModel.Col4)
+            //    };
+            //    NewMapping(mappingModel.SrcIpAddr, mappingModel.SrcPort, mappingModel.DestIpAddr, mappingModel.DestPort);
+            //    ReloadMappingList();
+            //}
+        }
+
+        private void btn_mappingList_refresh_Click(object sender, RoutedEventArgs e)
+        {
+            MappingMgr.Refresh();
         }
     }
 }

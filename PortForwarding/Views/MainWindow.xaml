@@ -1,0 +1,109 @@
+<Window x:Name="window"
+        x:Class="PortForwarding.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PortForwarding"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded"
+        Title="端口转发" Height="558" Width="963.5">
+    <Window.Resources>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <TextBox x:Name="tbx_adapterMappingIp" IsReadOnly="True" Grid.Row="1" AcceptsReturn="True"/>
+            <TabControl Grid.Row="2" TabStripPlacement="Left">
+                <TabItem Header="概&#xD;&#xA;览&#xD;&#xA;视&#xD;&#xA;图">
+                    <DataGrid x:Name="dataGrid_mappingList" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="110" Header="IP地址" IsReadOnly="True" Binding="{Binding Path=SrcIpAddr}"/>
+                            <DataGridTextColumn Width="60" Header="端口" IsReadOnly="True" Binding="{Binding Path=SrcPort}"/>
+                            <DataGridTextColumn Width="110" Header="IP地址" IsReadOnly="True" Binding="{Binding Path=DestIpAddr}"/>
+                            <DataGridTextColumn Width="60" Header="端口" IsReadOnly="True" Binding="{Binding Path=DestPort}"/>
+                            <DataGridTemplateColumn Width="110" IsReadOnly="True">
+                                <DataGridTemplateColumn.Header>
+                                    <Button x:Name="btn_mappingList_refresh" Click="btn_mappingList_refresh_Click" Padding="10,0,10,0" Content="刷新列表" Margin="5,0,5,0"/>
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button x:Name="btn_mappingList_switchEditStatus" Click="btn_mappingList_switchEditStatus_Click" Padding="10,0,10,0" Content="{Binding Editing,Converter={StaticResource MappingListCaseConverter},ConverterParameter=SwitchEditStatus}" Margin="5,0,5,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Width="110" IsReadOnly="True">
+                                <DataGridTemplateColumn.Header>
+                                    <Button Padding="10,0,10,0" Content="新增一项" Margin="5,0,5,0"/>
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Padding="10,0,10,0" Content="移除该项" Margin="5,0,5,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Width="110" IsReadOnly="True">
+                                <DataGridTemplateColumn.Header>
+                                    <Menu>
+                                        <MenuItem Padding="0">
+                                            <MenuItem.Header>
+                                                <Button x:Name="btn_menuItemHeaderOption" Width="50" Click="btn_menuItemHeaderOption_Click">选项</Button>
+                                            </MenuItem.Header>
+                                            <MenuItem x:Name="menuItem_saveConfigAs" Header="配置另存为" Click="menuItem_saveConfigAs_Click"/>
+                                            <MenuItem x:Name="menuItem_loadConfig" Header="加载配置" Click="menuItem_loadConfig_Click"/>
+                                            <MenuItem x:Name="menuItem_appendConfig" Header="附加配置" Click="menuItem_appendConfig_Click"/>
+                                            <MenuItem x:Name="menuItem_removeConfig" Header="移除配置" Click="menuItem_removeConfig_Click"/>
+                                        </MenuItem>
+                                    </Menu>
+                                </DataGridTemplateColumn.Header>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
+                <TabItem Header="配&#xD;&#xA;置&#xD;&#xA;视&#xD;&#xA;图">
+                    <DataGrid x:Name="dataGrid_configPanel" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="110" Header="IP地址" IsReadOnly="True" Binding="{Binding Path=SrcIpAddr}"/>
+                            <DataGridTextColumn Width="60" Header="端口" IsReadOnly="True" Binding="{Binding Path=SrcPort}"/>
+                            <DataGridTextColumn Width="110" Header="IP地址" IsReadOnly="True" Binding="{Binding Path=DestIpAddr}"/>
+                            <DataGridTextColumn Width="60" Header="端口" IsReadOnly="True" Binding="{Binding Path=DestPort}"/>
+                            <DataGridTemplateColumn IsReadOnly="True" Header="状态" Width="40">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid Background="{Binding Path=Enabled,Converter={StaticResource ConfigPanelCaseConverter},ConverterParameter=color}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn IsReadOnly="True">
+                                <DataGridTemplateColumn.Header>
+                                    <Button x:Name="btn_selectConfig2ConfigPanel" Padding="10,0,10,0" Content="选择配置加载" Margin="5,0,5,0" Click="btn_selectConfig2ConfigPanel_Click"/>
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button x:Name="btn_enabledConfigItem" HorizontalAlignment="Center" Padding="10,0,10,0" Content="{Binding ElementName=btn_enabledConfigItem,Path=Tag,Converter={StaticResource configPanelCaseConverter}}" Tag="{Binding Path=Enabled}" Click="btn_enabledConfigItem_Click"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
+            </TabControl>
+            <TextBox Grid.Row="3" x:Name="tbx_console" IsReadOnly="True" TextWrapping="Wrap" Text="" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+            <StatusBar Grid.Row="4">
+                <StatusBarItem>
+                    <TextBox Width="120" IsReadOnly="True" Background="Transparent" BorderThickness="0" Text="{Binding ElementName=window, Path=Version, StringFormat=Version {0}}"/>
+                </StatusBarItem>
+            </StatusBar>
+        </Grid>
+    </Grid>
+</Window>

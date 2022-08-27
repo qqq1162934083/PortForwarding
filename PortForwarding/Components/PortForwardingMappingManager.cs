@@ -16,7 +16,7 @@ namespace PortForwarding
         private PortForwardingMappingComparer MappingComparer { get; set; }
         private PortForwardingSrcMappingSrcComparer SrcMappingComparer { get; set; }
         private PortForwardingDestMappingComparer DestMappingComparer { get; set; }
-        private List<PortForwardingMappingModel> MappingList { get; set; } = new List<PortForwardingMappingModel>();
+        public List<PortForwardingMappingModel> MappingList { get; private set; } = new List<PortForwardingMappingModel>();
         public event Action<List<PortForwardingMappingModel>> MappingListChanged;
         public event Action<string> ConsoleOutput;
         public PortForwardingMappingManager()
@@ -31,7 +31,16 @@ namespace PortForwarding
         /// <param name="model"></param>
         public void AddMapping(PortForwardingMappingModel model)
         {
-            var cmd = $"netsh interface portproxy add v4tov4 listenaddress={model.SrcIpAddr} listenport={model.SrcPort} connectaddress={model.DestIpAddr} connectport={model.DestPort}";
+            AddMapping(model.SrcIpAddr, model.SrcPort, model.DestIpAddr, model.DestPort);
+        }
+
+        /// <summary>
+        /// 添加一个端口映射
+        /// </summary>
+        /// <param name="model"></param>
+        public void AddMapping(string srcIpAddr, int srcPort, string destIpAddr, int destPort)
+        {
+            var cmd = $"netsh interface portproxy add v4tov4 listenaddress={srcIpAddr} listenport={srcPort} connectaddress={destIpAddr} connectport={destPort}";
             var result = ConsoleUtils.GetCmdResult(cmd);
             ConsoleOutput?.Invoke(result);
         }
@@ -42,7 +51,15 @@ namespace PortForwarding
         /// <param name="model"></param>
         public void RemoveMapping(PortForwardingMappingModel model)
         {
-            var cmd = $"netsh interface portproxy delete v4tov4 listenaddress={model.SrcIpAddr} listenport={model.SrcPort}";
+            RemoveMapping(model.SrcIpAddr, model.SrcPort);
+        }
+        /// <summary>
+        /// 移除一个端口映射
+        /// </summary>
+        /// <param name="model"></param>
+        public void RemoveMapping(string srcIpAddr, int srcPort)
+        {
+            var cmd = $"netsh interface portproxy delete v4tov4 listenaddress={srcIpAddr} listenport={srcPort}";
             var result = ConsoleUtils.GetCmdResult(cmd);
             ConsoleOutput?.Invoke(result);
         }
