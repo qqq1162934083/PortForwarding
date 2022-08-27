@@ -62,7 +62,8 @@ namespace MyTool
             finally
             {
                 if (File.Exists(batPath))
-                    FileSystem.DeleteFile(batPath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                    File.Delete(batPath);
+                    //FileSystem.DeleteFile(batPath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
             }
         }
 

@@ -56,27 +56,27 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Width="110" IsReadOnly="True">
+                            <DataGridTemplateColumn Width="90" IsReadOnly="True">
                                 <DataGridTemplateColumn.Header>
-                                    <Button x:Name="btn_mappingList_refresh" Click="btn_mappingList_refresh_Click" Padding="10,0,10,0" Content="刷新列表" Margin="5,0,5,0"/>
+                                    <Button x:Name="btn_mappingList_refresh" Width="70" Click="btn_mappingList_refresh_Click" Padding="10,0,10,0" Content="刷新列表" Margin="5,0,5,0"/>
                                 </DataGridTemplateColumn.Header>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Button x:Name="btn_mappingList_switchEditStatus" Click="btn_mappingList_switchEditStatus_Click" Padding="10,0,10,0" Content="{Binding Editing,Converter={StaticResource MappingListCaseConverter},ConverterParameter=SwitchEditStatus}" Margin="5,0,5,0"/>
+                                        <Button x:Name="btn_mappingList_switchEditStatus" Width="70" Click="btn_mappingList_switchEditStatus_Click" Padding="10,0,10,0" Content="{Binding Editing,Converter={StaticResource MappingListCaseConverter},ConverterParameter=SwitchEditStatus}" Margin="5,0,5,0"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Width="110" IsReadOnly="True">
+                            <DataGridTemplateColumn Width="90" IsReadOnly="True">
                                 <DataGridTemplateColumn.Header>
-                                    <Button x:Name="btn_mappingList_newItem" Click="btn_mappingList_newItem_Click" Padding="10,0,10,0" Content="新增一项" Margin="5,0,5,0"/>
+                                    <Button x:Name="btn_mappingList_newItem" Width="70" Click="btn_mappingList_newItem_Click" Padding="10,0,10,0" Content="新增一项" Margin="5,0,5,0"/>
                                 </DataGridTemplateColumn.Header>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Button x:Name="btn_mappingList_removeItem" Click="btn_mappingList_removeItem_Click" Padding="10,0,10,0" Content="移除该项" Margin="5,0,5,0"/>
+                                        <Button x:Name="btn_mappingList_removeItem" Width="70" Click="btn_mappingList_removeItem_Click" Padding="10,0,10,0" Content="移除该项" Margin="5,0,5,0"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Width="110" IsReadOnly="True">
+                            <DataGridTemplateColumn Width="64" IsReadOnly="True">
                                 <DataGridTemplateColumn.Header>
                                     <Menu>
                                         <MenuItem Padding="0">
