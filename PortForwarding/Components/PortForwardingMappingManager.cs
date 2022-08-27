@@ -14,7 +14,7 @@ namespace PortForwarding
     public class PortForwardingMappingManager
     {
         private PortForwardingMappingComparer MappingComparer { get; set; }
-        private PortForwardingSrcMappingSrcComparer SrcMappingComparer { get; set; }
+        private PortForwardingSrcMappingComparer SrcMappingComparer { get; set; }
         private PortForwardingDestMappingComparer DestMappingComparer { get; set; }
         public List<PortForwardingMappingModel> MappingList { get; private set; } = new List<PortForwardingMappingModel>();
         public event Action<List<PortForwardingMappingModel>> MappingListChanged;
@@ -22,7 +22,7 @@ namespace PortForwarding
         public PortForwardingMappingManager()
         {
             MappingComparer = new PortForwardingMappingComparer();
-            SrcMappingComparer = new PortForwardingSrcMappingSrcComparer();
+            SrcMappingComparer = new PortForwardingSrcMappingComparer();
             DestMappingComparer = new PortForwardingDestMappingComparer();
         }
         /// <summary>
@@ -185,7 +185,7 @@ namespace PortForwarding
             throw new NotImplementedException();
         }
     }
-    public class PortForwardingSrcMappingSrcComparer : PortForwardingMappingComparer
+    public class PortForwardingSrcMappingComparer : PortForwardingMappingComparer
     {
         public override bool Equals(PortForwardingMappingModel x, PortForwardingMappingModel y)
         {

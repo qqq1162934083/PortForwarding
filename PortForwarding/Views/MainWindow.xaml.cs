@@ -35,8 +35,15 @@ namespace PortForwarding
             InitializeComponent();
             MappingMgr.ConsoleOutput += WriteConsole;
             MappingMgr.MappingListChanged += Load_dataGrid_mappingList;
-            MappingMgr.MappingListChanged += Load_dataGrid_configPanel;
-            Task.Run(() => MappingMgr.Update());
+            MappingMgr.MappingListChanged += UpdateStatus_dataGrid_configPanel;
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    MappingMgr.Update();
+                    Thread.Sleep(10000);
+                }
+            });
             Task.Run(() =>
             {
                 while (true)
@@ -59,11 +66,14 @@ namespace PortForwarding
             });
         }
 
-        private void Load_dataGrid_configPanel(List<PortForwardingMappingModel> mappingList)
+        private void UpdateStatus_dataGrid_configPanel(List<PortForwardingMappingModel> mappingList)
         {
             Dispatcher.Invoke(() =>
             {
-                dataGrid_configPanel.ItemsSource = mappingList.Select(x => new ConfigPanelViewModel(x)).ToList();
+                dataGrid_configPanel.Items.Cast<ConfigPanelViewModel>().ToList().ForEach(item =>
+                {
+                    item.Enabled = MappingSrcEnabled(item.SrcIpAddr, item.SrcPort);
+                });
             });
         }
 
@@ -242,13 +252,27 @@ namespace PortForwarding
         {
             FileDialogUtils.SelectOpenFile(r => r.Filter = "配置文件|*.cfg", r =>
             {
-                var enabledMappingList = MappingMgr.MappingList;
                 var viewModelItemList = ReadConfigMappingList(r.FileName).Select(x => new ConfigPanelViewModel(x)
                 {
-                    Enabled = enabledMappingList.Any(y => y.SrcIpAddr == x.SrcIpAddr && y.SrcPort == x.SrcPort)
+                    Enabled = MappingSrcEnabled(x.SrcIpAddr, x.SrcPort)
                 }).ToList();
                 dataGrid_configPanel.ItemsSource = new ObservableCollection<ConfigPanelViewModel>(viewModelItemList);
             });
+        }
+
+        /// <summary>
+        /// 判断该映射源是否已经配置
+        /// </summary>
+        /// <param name="srcIpAddr"></param>
+        /// <param name="srcPort"></param>
+        /// <returns></returns>
+        private bool MappingSrcEnabled(string srcIpAddr, int srcPort)
+        {
+            return MappingMgr.MappingList.Any(y => PortForwardingMappingComparer.IsSameSrcMapping(y, new PortForwardingMappingModel
+            {
+                SrcIpAddr = srcIpAddr,
+                SrcPort = srcPort
+            }));
         }
 
         private void btn_enabledConfigItem_Click(object sender, RoutedEventArgs e)
@@ -265,6 +289,7 @@ namespace PortForwarding
             {
                 MappingMgr.RemoveMapping(mapping.SrcIpAddr, mapping.SrcPort);
             }
+            MappingMgr.Update();
         }
 
         private void btn_mappingList_switchEditStatus_Click(object sender, RoutedEventArgs e)
@@ -278,7 +303,7 @@ namespace PortForwarding
                 if (viewModel.IsNewData)//新增
                 {
                     MappingMgr.Update();
-                    if(!MappingMgr.MappingList.Any(x => PortForwardingMappingComparer.IsSameMapping(x, new PortForwardingMappingModel
+                    if (!MappingMgr.MappingList.Any(x => PortForwardingMappingComparer.IsSameMapping(x, new PortForwardingMappingModel
                     {
                         SrcIpAddr = viewModel.SrcIpAddr,
                         SrcPort = viewModel.SrcPort,
