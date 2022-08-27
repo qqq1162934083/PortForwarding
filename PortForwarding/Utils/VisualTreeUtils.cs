@@ -96,14 +96,36 @@ namespace PortForwarding
         /// </summary>
         /// <typeparam name="TChild"></typeparam>
         /// <param name="obj">用于提供查找的根元素</param>
-        /// <param name="predicateExpression">谓词检索表达式</param>
+        /// <param name="predicate">谓词检索表达式</param>
         /// <returns></returns>
-        public static List<TChild> FindChildrens<TChild>(DependencyObject obj, Expression<Predicate<FrameworkElement>> predicateExpression)
+        public static List<TChild> FindChildrens<TChild>(DependencyObject obj, Predicate<FrameworkElement> predicate)
             where TChild : FrameworkElement
         {
             var elem = Convert2FrameworkElement(obj);
             var childrens = GetChildrens<FrameworkElement>(elem);
-            return childrens.Where(x => (bool)predicateExpression.Compile().DynamicInvoke(x)).Cast<TChild>().ToList();
+            return childrens.Where(x => predicate.Invoke(x)).Cast<TChild>().ToList();
+        }
+
+        /// <summary>
+        /// 递归获取视图元素中符合谓词条件所有的子元素
+        /// </summary>
+        /// <typeparam name="TChild"></typeparam>
+        /// <param name="obj">用于提供查找的根元素</param>
+        /// <param name="predicate">谓词检索表达式</param>
+        /// <returns></returns>
+        public static List<TChild> RecursiveFindChildrens<TChild>(DependencyObject obj, Predicate<FrameworkElement> predicate)
+            where TChild : FrameworkElement
+        {
+            var elem = Convert2FrameworkElement(obj);
+            var resultList = new List<FrameworkElement>();
+            var childrens = GetChildrens<FrameworkElement>(elem);
+            foreach (var child in childrens)
+            {
+                resultList.AddRange(RecursiveFindChildrens<FrameworkElement>(child, predicate));
+                if (predicate.Invoke(child)) resultList.Add(child);
+            }
+
+            return resultList.Cast<TChild>().ToList();
         }
 
         /// <summary>
@@ -125,7 +147,7 @@ namespace PortForwarding
             }
             return resultList.Cast<TChild>().ToList();
         }
-        #region
+        #endregion
 
         #region 通用处理
         private static FrameworkElement Convert2FrameworkElement(object obj)

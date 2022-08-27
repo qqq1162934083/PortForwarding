@@ -308,16 +308,28 @@ namespace PortForwarding
             var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
             var index = dataGrid_mappingList.Items.IndexOf(viewModel);
             if (index < 0) throw new Exception("行序号获取失败");
-            var ss = VisualTreeHelper.GetParent(btn);
-            var ss_childs = VisualTreeUtils.GetChildrens<FrameworkElement>(ss);
-            var ss1 = VisualTreeHelper.GetParent(ss);
-            var ss1_childs = VisualTreeUtils.GetChildrens<FrameworkElement>(ss1);
-            var ss2 = VisualTreeHelper.GetParent(ss1);
-            var ss2_childs = VisualTreeUtils.GetChildrens<FrameworkElement>(ss2);
-            var ss3 = VisualTreeHelper.GetParent(ss2);
-            var ss3_childs = VisualTreeUtils.GetChildrens<FrameworkElement>(ss3);
-            var ss4 = VisualTreeHelper.GetParent(ss3);
-            var ss4_childs = VisualTreeUtils.GetChildrens<FrameworkElement>(ss4);
+            var dataGridCell = VisualTreeUtils.GetFirstParent<DataGridCell>(btn);
+            var dataGridCellList = VisualTreeUtils.GetChildrens<DataGridCell>(VisualTreeUtils.GetParent<FrameworkElement>(dataGridCell));
+            //for (int i = 0; i < 4; i++)
+            //{
+            //    var cell = dataGridCellList[i];
+            //    var hasReadOnlyList = VisualTreeUtils.RecursiveFindChildrens<FrameworkElement>(cell, elem =>
+            //    {
+            //        var elemType = elem.GetType();
+            //        var ssp = elemType.GetProperties();
+            //        var pp = elemType.GetProperty("ContentEnd");
+            //        if (pp != null)
+            //        {
+            //            Console.WriteLine();
+            //        }
+
+            //        return pp != null && pp.PropertyType == typeof(bool) && pp.SetMethod != null;
+            //    });
+            //}
+            new VisualTreePrinter().PrintVisualTree(0, dataGridCellList[0]);
+            new VisualTreePrinter().PrintLogicaTree(0, dataGridCellList[0]);
+            var ss = VisualTreeUtils.FindChildrens<Border>(dataGridCellList[0]).FirstOrDefault();
+            var ss2 = VisualTreeUtils.GetChildrens<FrameworkElement>(ss);
             //dataGrid_mappingList
             viewModel.Editing = !viewModel.Editing;
             //btn.Content = viewModel.ing ? "完成修改" : "开始修改";
@@ -348,6 +360,38 @@ namespace PortForwarding
         private void btn_mappingList_refresh_Click(object sender, RoutedEventArgs e)
         {
             MappingMgr.Refresh();
+        }
+    }
+    public class VisualTreePrinter
+    {
+        public void PrintLogicaTree(int depth, object obj)  //输出逻辑树
+        {
+            test1(new string(' ', depth) + obj);
+            if (!(obj is DependencyObject))
+            {
+                return;
+            }
+            foreach (object child in LogicalTreeHelper.GetChildren(obj as DependencyObject))
+                PrintLogicaTree(depth + 1, child);
+        }
+
+        public void PrintVisualTree(int depth, DependencyObject DObj)
+        {
+            test1(new string(' ', depth) + DObj);
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(DObj); i++)
+            {
+                PrintVisualTree(depth + 1, VisualTreeHelper.GetChild(DObj, i));
+            }
+        }
+        //需先建立文件夹
+        public void test1(string a) //切换用户不会停止当前代码
+        {
+            //写输出信息      
+            //StreamWriter sr = new StreamWriter(@"C:\Users\Public\test\a.txt", true, System.Text.Encoding.Default);  // 保留文件原来的内容
+            //sr.WriteLine(DateTime.Now.ToString("\r\n" + "HH:mm:ss"));
+            //sr.WriteLine(a);
+            //sr.Close();
+            Console.WriteLine(a);
         }
     }
 }
