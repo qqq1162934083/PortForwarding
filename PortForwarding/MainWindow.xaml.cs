@@ -28,22 +28,13 @@ namespace PortForwarding
     public partial class MainWindow : Window
     {
         public string Version { get => Assembly.GetExecutingAssembly().GetName().Version.ToString(); set { } }
-
-        //public List<PortForwardingMappingModel> PortForwardingMappingList
-        //{
-        //    get => _portForwardingMappingList;
-        //    set
-        //    {
-        //        _portForwardingMappingList = value;
-        //    }
-        //}
-        //private List<PortForwardingMappingModel> _portForwardingMappingList;
-        //private event Action<List<PortForwardingMappingModel>> _portForwardingMappingListChanged { get;set; }
+        public PortForwardingMappingManager MappingMgr { get; set; } = new PortForwardingMappingManager();
 
         private List<PortForwardingMappingModel> PortForwardingMappingList { get; set; }
 
         public MainWindow()
         {
+            MappingMgr.Refresh();
             InitializeComponent();
             Task.Run(() =>
             {
@@ -57,33 +48,7 @@ namespace PortForwarding
 
         private void ReloadMappingList()
         {
-            var cmd = "netsh interface portproxy show v4tov4";
-            var result = ConsoleUtils.GetCmdResult(cmd);
-            var lines = result.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Skip(3).Select(x => x.Trim()).ToArray();
-            var mappingList = new List<PortForwardingMappingModel>();
-            var lineIndex = 0;
-            foreach (var line in lines)
-            {
-                var items = Regex.Split(line, "\\s+");
-                if (items.Length != 4)
-                    throw new Exception($"索引为{lineIndex}的项:{line},不能匹配规则");
-                var srcIpAddr = items[0];
-                var srcPort = int.Parse(items[1]);
-                var destIpAddr = items[2];
-                var destPort = int.Parse(items[3]);
-                var mappingModel = new PortForwardingMappingModel
-                {
-                    SrcIpAddr = srcIpAddr,
-                    DestIpAddr = destIpAddr,
-                    SrcPort = srcPort,
-                    DestPort = destPort
-                };
-                mappingList.Add(mappingModel);
-                lineIndex++;
-            }
             LoadMappingList(mappingList);
-
-            WriteConsole(result);
         }
         private void LoadMappingList(List<PortForwardingMappingModel> mappingList)
         {
@@ -109,18 +74,6 @@ namespace PortForwarding
                     item.Enabled = mappingList.Any(x => x.SrcIpAddr == item.SrcIpAddr && x.SrcPort == item.SrcPort);
                 }
             }
-        }
-        private void NewMapping(string srcIpAddr, int srcPort, string destIpAddr, int destPort)
-        {
-            var cmd = $"netsh interface portproxy add v4tov4 listenaddress={srcIpAddr} listenport={srcPort} connectaddress={destIpAddr} connectport={destPort}";
-            var result = ConsoleUtils.GetCmdResult(cmd);
-            WriteConsole(result);
-        }
-        private void DeleteMapping(string srcIpAddr, int srcPort)
-        {
-            var cmd = $"netsh interface portproxy delete v4tov4 listenaddress={srcIpAddr} listenport={srcPort}";
-            var result = ConsoleUtils.GetCmdResult(cmd);
-            WriteConsole(result);
         }
         private void WriteConsole(string text)
         {
