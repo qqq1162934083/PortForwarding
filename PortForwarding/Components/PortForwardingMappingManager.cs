@@ -70,6 +70,15 @@ namespace PortForwarding
         public void Refresh()
         {
             Load();
+            MappingListChanged?.Invoke(MappingList);
+        }
+
+        /// <summary>
+        /// 更新映射
+        /// </summary>
+        public void Update()
+        {
+            Load(true);
         }
 
         /// <summary>
@@ -78,7 +87,7 @@ namespace PortForwarding
         /// 排序方式一样
         /// </summary>
         /// <exception cref="Exception"></exception>
-        private void Load()
+        private void Load(bool handleNotifyChanged = false)
         {
             const string cmd = "netsh interface portproxy show v4tov4";
             var result = ConsoleUtils.GetCmdResult(cmd);
@@ -118,9 +127,9 @@ namespace PortForwarding
                     valueCount++;
                 }
             }
-            var listChanged = MappingList.Count == valueCount;
+            var listChanged = mappingList.Count != MappingList.Count || MappingList.Count != valueCount;
             MappingList = mappingList;
-            if (listChanged)
+            if (handleNotifyChanged && listChanged)
             {
                 //通知集合更新
                 MappingListChanged?.Invoke(MappingList);

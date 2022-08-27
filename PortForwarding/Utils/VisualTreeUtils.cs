@@ -157,4 +157,37 @@ namespace PortForwarding
         }
         #endregion
     }
+
+    public class VisualTreePrinter
+    {
+        public void PrintLogicaTree(int depth, object obj)  //输出逻辑树
+        {
+            test1(new string(' ', depth) + obj);
+            if (!(obj is DependencyObject))
+            {
+                return;
+            }
+            foreach (object child in LogicalTreeHelper.GetChildren(obj as DependencyObject))
+                PrintLogicaTree(depth + 1, child);
+        }
+
+        public void PrintVisualTree(int depth, DependencyObject DObj)
+        {
+            test1(new string(' ', depth) + DObj);
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(DObj); i++)
+            {
+                PrintVisualTree(depth + 1, VisualTreeHelper.GetChild(DObj, i));
+            }
+        }
+        //需先建立文件夹
+        public void test1(string a) //切换用户不会停止当前代码
+        {
+            //写输出信息      
+            //StreamWriter sr = new StreamWriter(@"C:\Users\Public\test\a.txt", true, System.Text.Encoding.Default);  // 保留文件原来的内容
+            //sr.WriteLine(DateTime.Now.ToString("\r\n" + "HH:mm:ss"));
+            //sr.WriteLine(a);
+            //sr.Close();
+            Console.WriteLine(a);
+        }
+    }
 }

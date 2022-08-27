@@ -63,11 +63,17 @@ namespace PortForwarding
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Editing)));
             }
         }
+
+        /// <summary>
+        /// 判断改条记录是否是在创建中的
+        /// </summary>
+        public bool IsNewData { get; set; } = false;
+
         private bool _editing;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private PortForwardingMappingModel Mapping { get; set; }
+        public PortForwardingMappingModel Mapping { get; set; }
 
         public PortForwardingMappingViewModel(PortForwardingMappingModel mapping)
         {
@@ -79,6 +85,21 @@ namespace PortForwarding
                 DestPort = mapping.DestPort;
             }
             Mapping = mapping;
+        }
+
+        /// <summary>
+        /// 判断视图和数据是否存在差异
+        /// </summary>
+        /// <returns></returns>
+        public bool DiffFromData()
+        {
+            return !PortForwardingMappingComparer.IsSameMapping(new PortForwardingMappingModel
+            {
+                SrcIpAddr = SrcIpAddr,
+                SrcPort = SrcPort,
+                DestIpAddr = DestIpAddr,
+                DestPort = DestPort
+            }, Mapping);
         }
     }
 }

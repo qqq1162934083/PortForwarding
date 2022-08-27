@@ -68,11 +68,11 @@
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn Width="110" IsReadOnly="True">
                                 <DataGridTemplateColumn.Header>
-                                    <Button Padding="10,0,10,0" Content="新增一项" Margin="5,0,5,0"/>
+                                    <Button x:Name="btn_mappingList_newItem" Click="btn_mappingList_newItem_Click" Padding="10,0,10,0" Content="新增一项" Margin="5,0,5,0"/>
                                 </DataGridTemplateColumn.Header>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Button Padding="10,0,10,0" Content="移除该项" Margin="5,0,5,0"/>
+                                        <Button x:Name="btn_mappingList_removeItem" Click="btn_mappingList_removeItem_Click" Padding="10,0,10,0" Content="移除该项" Margin="5,0,5,0"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -81,7 +81,7 @@
                                     <Menu>
                                         <MenuItem Padding="0">
                                             <MenuItem.Header>
-                                                <Button x:Name="btn_menuItemHeaderOption" Width="50" Click="btn_menuItemHeaderOption_Click">选项</Button>
+                                                <Button IsHitTestVisible="False" Width="50">选项</Button>
                                             </MenuItem.Header>
                                             <MenuItem x:Name="menuItem_saveConfigAs" Header="配置另存为" Click="menuItem_saveConfigAs_Click"/>
                                             <MenuItem x:Name="menuItem_loadConfig" Header="加载配置" Click="menuItem_loadConfig_Click"/>
@@ -114,7 +114,7 @@
                                 </DataGridTemplateColumn.Header>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Button x:Name="btn_enabledConfigItem" HorizontalAlignment="Center" Padding="10,0,10,0" Content="{Binding ElementName=btn_enabledConfigItem,Path=Tag,Converter={StaticResource configPanelCaseConverter}}" Tag="{Binding Path=Enabled}" Click="btn_enabledConfigItem_Click"/>
+                                        <Button x:Name="btn_enabledConfigItem" HorizontalAlignment="Center" Padding="10,0,10,0" Content="{Binding ElementName=btn_enabledConfigItem,Path=Tag,Converter={StaticResource ConfigPanelCaseConverter}}" Tag="{Binding Path=Enabled}" Click="btn_enabledConfigItem_Click"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

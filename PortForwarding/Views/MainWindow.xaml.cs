@@ -36,7 +36,7 @@ namespace PortForwarding
             MappingMgr.ConsoleOutput += WriteConsole;
             MappingMgr.MappingListChanged += Load_dataGrid_mappingList;
             MappingMgr.MappingListChanged += Load_dataGrid_configPanel;
-            Task.Run(() => MappingMgr.Refresh());
+            Task.Run(() => MappingMgr.Update());
             Task.Run(() =>
             {
                 while (true)
@@ -51,7 +51,11 @@ namespace PortForwarding
         {
             Dispatcher.Invoke(() =>
             {
-                dataGrid_mappingList.ItemsSource = mappingList.Select(x => new PortForwardingMappingViewModel(x)).ToList();
+                dataGrid_mappingList.Items.Clear();
+                foreach (var item in mappingList.Select(x => new PortForwardingMappingViewModel(x)))
+                {
+                    dataGrid_mappingList.Items.Add(item);
+                }
             });
         }
 
@@ -120,40 +124,6 @@ namespace PortForwarding
             }
         }
 
-        //private void btn_new_delete(object sender, RoutedEventArgs e)
-        //{
-        //    var btn = (Button)sender;
-        //    var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
-        //    if (viewModel.RowType == RowType.Header)
-        //    {
-        //        var mappingModel = new PortForwardingMappingModel
-        //        {
-        //            SrcIpAddr = "0.0.0.0",
-        //            SrcPort = 0,
-        //            DestIpAddr = "0.0.0.0",
-        //            DestPort = 0
-        //        };
-        //        PortForwardingMappingViewModel newItem;
-        //        var itemIndex = 1;
-        //        lbx_mappingList.Items.Insert(itemIndex, newItem = new PortForwardingMappingViewModel(mappingModel)
-        //        {
-        //            Col5 = "完成修改",
-        //            Editabled = true,
-        //            ReadOnly = false,
-        //            MappingModel = null,
-        //        });
-        //    }
-        //    else
-        //    {
-        //        var mappingModel = viewModel?.MappingModel;
-        //        if (mappingModel != null)
-        //        {
-        //            DeleteMapping(mappingModel.SrcIpAddr, mappingModel.SrcPort);
-        //            ReloadMappingList();
-        //        }
-        //    }
-        //}
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
         }
@@ -193,6 +163,7 @@ namespace PortForwarding
                 {
                     MappingMgr.AddMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
                 }
+                MappingMgr.Update();
             });
         }
 
@@ -227,6 +198,7 @@ namespace PortForwarding
                 {
                     MappingMgr.AddMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
                 }
+                MappingMgr.Update();
             });
         }
 
@@ -262,7 +234,7 @@ namespace PortForwarding
                 {
                     MappingMgr.RemoveMapping(mapping.SrcIpAddr, mapping.SrcPort);
                 }
-
+                MappingMgr.Update();
             });
         }
 
@@ -295,103 +267,69 @@ namespace PortForwarding
             }
         }
 
-        private void btn_menuItemHeaderOption_Click(object sender, RoutedEventArgs e)
-        {
-            var btn = (Button)sender;
-            var obj = VisualTreeHelper.GetParent(btn);
-
-        }
-
         private void btn_mappingList_switchEditStatus_Click(object sender, RoutedEventArgs e)
         {
             var btn = (Button)sender;
             var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
-            var index = dataGrid_mappingList.Items.IndexOf(viewModel);
-            if (index < 0) throw new Exception("行序号获取失败");
-            var dataGridCell = VisualTreeUtils.GetFirstParent<DataGridCell>(btn);
-            var dataGridCellList = VisualTreeUtils.GetChildrens<DataGridCell>(VisualTreeUtils.GetParent<FrameworkElement>(dataGridCell));
-            //for (int i = 0; i < 4; i++)
-            //{
-            //    var cell = dataGridCellList[i];
-            //    var hasReadOnlyList = VisualTreeUtils.RecursiveFindChildrens<FrameworkElement>(cell, elem =>
-            //    {
-            //        var elemType = elem.GetType();
-            //        var ssp = elemType.GetProperties();
-            //        var pp = elemType.GetProperty("ContentEnd");
-            //        if (pp != null)
-            //        {
-            //            Console.WriteLine();
-            //        }
 
-            //        return pp != null && pp.PropertyType == typeof(bool) && pp.SetMethod != null;
-            //    });
-            //}
-            new VisualTreePrinter().PrintVisualTree(0, dataGridCellList[0]);
-            new VisualTreePrinter().PrintLogicaTree(0, dataGridCellList[0]);
-            var ss = VisualTreeUtils.FindChildrens<Border>(dataGridCellList[0]).FirstOrDefault();
-            var ss2 = VisualTreeUtils.GetChildrens<FrameworkElement>(ss);
-            //dataGrid_mappingList
             viewModel.Editing = !viewModel.Editing;
-            //btn.Content = viewModel.ing ? "完成修改" : "开始修改";
-            //for (var i = 1; i <= 4; i++)
-            //{
-            //    var textBox = VisualTreeUtils.FindChildren<TextBox>((FrameworkElement)VisualTreeHelper.GetParent(btn), "tbx_col" + i);
-            //    textBox.IsReadOnly = !viewModel.Editabled;
-            //}
-            //if (!viewModel.Editabled)//点击完成修改时
-            //{
-            //    var mappingModel = viewModel.MappingModel;
-            //    if (mappingModel != null)
-            //    {
-            //        DeleteMapping(mappingModel.SrcIpAddr, mappingModel.SrcPort);
-            //    }
-            //    mappingModel = new PortForwardingMappingModel()
-            //    {
-            //        SrcIpAddr = viewModel.Col1,
-            //        SrcPort = int.Parse(viewModel.Col2),
-            //        DestIpAddr = viewModel.Col3,
-            //        DestPort = int.Parse(viewModel.Col4)
-            //    };
-            //    NewMapping(mappingModel.SrcIpAddr, mappingModel.SrcPort, mappingModel.DestIpAddr, mappingModel.DestPort);
-            //    ReloadMappingList();
-            //}
+            if (!viewModel.Editing)//点击完成修改时,有可能是新增,有可能是修改
+            {
+                if (viewModel.IsNewData)//新增
+                {
+                    MappingMgr.Update();
+                    if(!MappingMgr.MappingList.Any(x => PortForwardingMappingComparer.IsSameMapping(x, new PortForwardingMappingModel
+                    {
+                        SrcIpAddr = viewModel.SrcIpAddr,
+                        SrcPort = viewModel.SrcPort,
+                        DestIpAddr = viewModel.DestIpAddr,
+                        DestPort = viewModel.DestPort
+                    })))
+                    {
+                        MappingMgr.AddMapping(viewModel.SrcIpAddr, viewModel.SrcPort, viewModel.DestIpAddr, viewModel.DestPort);
+                        MappingMgr.Update();
+                    }
+                    else
+                    {
+                        dataGrid_mappingList.Items.Remove(viewModel);
+                    }
+                }
+                else if (viewModel.DiffFromData())//修改
+                {
+                    MappingMgr.RemoveMapping(viewModel.Mapping);
+                    MappingMgr.AddMapping(viewModel.SrcIpAddr, viewModel.SrcPort, viewModel.DestIpAddr, viewModel.DestPort);
+                    MappingMgr.Update();
+                }
+            }
         }
 
         private void btn_mappingList_refresh_Click(object sender, RoutedEventArgs e)
         {
             MappingMgr.Refresh();
         }
-    }
-    public class VisualTreePrinter
-    {
-        public void PrintLogicaTree(int depth, object obj)  //输出逻辑树
+
+        private void btn_mappingList_removeItem_Click(object sender, RoutedEventArgs e)
         {
-            test1(new string(' ', depth) + obj);
-            if (!(obj is DependencyObject))
-            {
-                return;
-            }
-            foreach (object child in LogicalTreeHelper.GetChildren(obj as DependencyObject))
-                PrintLogicaTree(depth + 1, child);
+            var btn = (Button)sender;
+            var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
+            MappingMgr.RemoveMapping(viewModel.Mapping);
+            MappingMgr.Update();
         }
 
-        public void PrintVisualTree(int depth, DependencyObject DObj)
+        private void btn_mappingList_newItem_Click(object sender, RoutedEventArgs e)
         {
-            test1(new string(' ', depth) + DObj);
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(DObj); i++)
+            PortForwardingMappingViewModel newItem = new PortForwardingMappingViewModel(new PortForwardingMappingModel
             {
-                PrintVisualTree(depth + 1, VisualTreeHelper.GetChild(DObj, i));
-            }
-        }
-        //需先建立文件夹
-        public void test1(string a) //切换用户不会停止当前代码
-        {
-            //写输出信息      
-            //StreamWriter sr = new StreamWriter(@"C:\Users\Public\test\a.txt", true, System.Text.Encoding.Default);  // 保留文件原来的内容
-            //sr.WriteLine(DateTime.Now.ToString("\r\n" + "HH:mm:ss"));
-            //sr.WriteLine(a);
-            //sr.Close();
-            Console.WriteLine(a);
+                SrcIpAddr = "*",
+                SrcPort = 0,
+                DestIpAddr = "0.0.0.0",
+                DestPort = 0
+            })
+            {
+                Editing = true,
+                IsNewData = true
+            };
+            dataGrid_mappingList.Items.Insert(0, newItem);
         }
     }
 }
