@@ -19,10 +19,10 @@ namespace PortForwarding
         /// <param name="obj"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static TChild GetFirstParent<TChild>(DependencyObject obj, string name)
+        public static TChild FindFirstParent<TChild>(DependencyObject obj, string name)
             where TChild : FrameworkElement
         {
-            return GetFirstParent<TChild>(obj, x => x.Name == name);
+            return FindFirstParent<TChild>(obj, x => x.Name == name);
         }
         /// <summary>
         /// 获取视图元素向上递归查找的第一个指定类型的父级元素
@@ -30,10 +30,10 @@ namespace PortForwarding
         /// <typeparam name="TChild"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static TChild GetFirstParent<TChild>(DependencyObject obj)
+        public static TChild FindFirstParent<TChild>(DependencyObject obj)
             where TChild : FrameworkElement
         {
-            return GetFirstParent<TChild>(obj, x => x.GetType() == typeof(TChild));
+            return FindFirstParent<TChild>(obj, x => x.GetType() == typeof(TChild));
         }
 
         /// <summary>
@@ -70,12 +70,12 @@ namespace PortForwarding
         /// <typeparam name="TChild"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static TChild GetFirstParent<TChild>(DependencyObject obj, Expression<Predicate<FrameworkElement>> predicateExpression)
+        public static TChild FindFirstParent<TChild>(DependencyObject obj, Expression<Predicate<FrameworkElement>> predicateExpression)
             where TChild : FrameworkElement
         {
             var parent = GetParent<FrameworkElement>(obj);
             if (parent == null || (bool)predicateExpression.Compile().DynamicInvoke(parent)) return (TChild)parent;
-            return GetFirstParent<TChild>(parent, predicateExpression);
+            return FindFirstParent<TChild>(parent, predicateExpression);
         }
 
         /// <summary>
