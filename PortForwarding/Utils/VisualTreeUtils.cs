@@ -9,6 +9,28 @@ using System.Windows.Media;
 
 namespace PortForwarding
 {
+    public static class VisualTreeExt
+    {
+        #region 基础扩展方法
+        public static TChild ChildrenAt<TChild>(this DependencyObject obj, params int[] indexs)
+            where TChild : DependencyObject
+        {
+            var result = obj;
+            for (int i = 0; i < indexs.Length; i++)
+            {
+                result = result.ChildrenAt(indexs[i]);
+            }
+            return (TChild)result;
+        }
+
+        public static DependencyObject ChildrenAt(this DependencyObject obj, int index)
+        {
+            var childCount = VisualTreeHelper.GetChildrenCount(obj);
+            if (index >= childCount || index < 0) throw new ArgumentOutOfRangeException($"没有索引为{index}的子元素");
+            return VisualTreeHelper.GetChild(obj, index);
+        }
+        #endregion
+    }
     public class VisualTreeUtils
     {
         #region 包装重载
@@ -61,7 +83,6 @@ namespace PortForwarding
             return FindChildrens<TChild>(obj, x => x.GetType() == typeof(TChild));
         }
         #endregion
-
 
         #region 基础方法
         /// <summary>

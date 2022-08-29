@@ -300,6 +300,12 @@ namespace PortForwarding
             viewModel.Editing = !viewModel.Editing;
             if (!viewModel.Editing)//点击完成修改时,有可能是新增,有可能是修改
             {
+                //视图到DataContext的更新失效,原因未知,手动获取值
+                var dataGridCells = VisualTreeUtils.FindChildrens<DataGridCell>(VisualTreeUtils.FindFirstParent<DataGridCellsPanel>(btn));
+                viewModel.SrcIpAddr = dataGridCells[0].ChildrenAt<TextBox>(0, 0, 0, 0).Text;
+                viewModel.SrcPort = int.Parse(dataGridCells[1].ChildrenAt<TextBox>(0, 0, 0, 0).Text);
+                viewModel.DestIpAddr = dataGridCells[2].ChildrenAt<TextBox>(0, 0, 0, 0).Text;
+                viewModel.DestPort = int.Parse(dataGridCells[3].ChildrenAt<TextBox>(0, 0, 0, 0).Text);
                 if (viewModel.IsNewData)//新增
                 {
                     MappingMgr.Update();
