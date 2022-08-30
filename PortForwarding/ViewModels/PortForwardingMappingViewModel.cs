@@ -82,12 +82,13 @@ namespace PortForwarding
         public bool IsNewData { get; set; } = false;
 
         private bool _editing;
-        internal TextBox tbx_mappingList_srcIpAddr;
-        internal TextBox tbx_mappingList_srcPort;
-        internal TextBox tbx_mappingList_destIpAddr;
-        internal TextBox tbx_mappingList_destPort;
-        internal Button btn_mappingList_switchEditStatus;
-        internal Button btn_mappingList_removeItem;
+        
+        public TextBox tbx_mappingList_srcIpAddr;
+        public TextBox tbx_mappingList_srcPort;
+        public TextBox tbx_mappingList_destIpAddr;
+        public TextBox tbx_mappingList_destPort;
+        public Button btn_mappingList_switchEditStatus;
+        public Button btn_mappingList_removeItem;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

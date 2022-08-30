@@ -340,6 +340,7 @@ namespace PortForwarding
                 SyncMappingRowViewData2Data(btn);
                 if (viewModel.IsNewData)//新增
                 {
+                    viewModel.IsNewData = false;
                     MappingMgr.Sync();
                     if (!MappingMgr.MappingList.Any(x => PortForwardingMappingComparer.IsSameMapping(x, new PortForwardingMappingModel
                     {
@@ -408,16 +409,34 @@ namespace PortForwarding
             {
                 IsNewData = true
             };
+
             dataGrid_mappingList.Items.Insert(0, newItem);
+
+
             //模拟点击
             Task.Run(() =>
             {
-                Thread.Sleep(1000);
-                Dispatcher.Invoke(() =>
+                while (true)
                 {
-                    var btn = VisualTreeUtils.RecursiveFindFirstChildren(dataGrid_mappingList, x => x is Button button && button.DataContext == newItem);
-                    if (btn != null) btn_mappingList_switchEditStatus_Click(btn, null);
-                });
+                    Thread.Sleep(10);
+                    var handleOk = false;
+                    Dispatcher.Invoke(() =>
+                    {
+                        var cell = (DataGridCell)VisualTreeUtils.RecursiveFindFirstChildren(dataGrid_mappingList, x => x is DataGridCell);
+                        if (cell != null && cell.DataContext != null)
+                        {
+                            var viewModel = (PortForwardingMappingViewModel)cell.DataContext;
+                            if (viewModel.IsNewData)
+                            {
+                                var cellPanel = VisualTreeUtils.FindFirstParent<DataGridCellsPanel>(cell);
+                                var btn = VisualTreeUtils.RecursiveFindFirstChildren(cellPanel, x => x is Button button && button.Name == nameof(viewModel.btn_mappingList_switchEditStatus));
+                                if (btn != null) btn_mappingList_switchEditStatus_Click(btn, null);
+                                handleOk = true;
+                            }
+                        }
+                    });
+                    if (handleOk) break;
+                }
             });
         }
 
@@ -458,11 +477,7 @@ namespace PortForwarding
             Console.WriteLine();
         }
 
-        private void dataGrid_mappingList_LoadingRow(object sender, DataGridRowEventArgs e)
-        {
-        }
-
-        private void dataGrid_mappingList_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void test(object sender, DependencyPropertyChangedEventArgs e)
         {
             //将视图绑定到viewModel
             var rowPanelList = VisualTreeUtils.RecursiveFindChildrens(dataGrid_mappingList, x => x is DataGridCellsPanel, (a, b, c) => a.Count == dataGrid_mappingList.Items.Count)
@@ -479,6 +494,34 @@ namespace PortForwarding
                 viewModel.btn_mappingList_switchEditStatus = (Button)rowPanel.FindName("btn_mappingList_switchEditStatus");
                 viewModel.btn_mappingList_removeItem = (Button)rowPanel.FindName("btn_mappingList_removeItem");
             }
+        }
+
+        private void DataContextElementMemberBind(object sender, RoutedEventArgs e)
+        {
+            if (sender == null || !(sender is FrameworkElement)) return;
+            var elem = (FrameworkElement)sender;
+            if (string.IsNullOrWhiteSpace(elem.Name)) return;
+            if (elem.DataContext == null) return;
+            var dataContextType = elem.DataContext.GetType();
+
+            //优先级 属性>字段
+            var propInfo = dataContextType.GetProperty(elem.Name, BindingFlags.Public | BindingFlags.Instance);
+            if (propInfo != null && propInfo.PropertyType.IsAssignableFrom(elem.GetType()))
+            {
+                propInfo.SetValue(elem.DataContext, elem);
+                return;
+            }
+            var fieldInfo = dataContextType.GetField(elem.Name, BindingFlags.Public | BindingFlags.Instance);
+            if (fieldInfo != null && fieldInfo.FieldType.IsAssignableFrom(elem.GetType()))
+            {
+                fieldInfo.SetValue(elem.DataContext, elem);
+                return;
+            }
+        }
+
+        private void btn_mappingList_switchEditStatus_Loaded(object sender, RoutedEventArgs e)
+        {
+            DataContextElementMemberBind(sender, e);
         }
     }
 }
