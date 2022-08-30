@@ -62,6 +62,7 @@
     </ApplicationDefinition>
     <Compile Include="Components\Converters\MappingListCaseConverter.cs" />
     <Compile Include="Components\Converters\ConfigPanelCaseConverter.cs" />
+    <Compile Include="Components\Converters\ReadOnlyPerformanceConverter.cs" />
     <Compile Include="ViewModels\ConfigPanelViewModel.cs" />
     <Compile Include="Utils\FileDialogUtils.cs" />
     <Compile Include="Components\PortForwardingMappingManager.cs" />

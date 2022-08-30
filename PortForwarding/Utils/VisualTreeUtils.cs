@@ -163,8 +163,12 @@ namespace PortForwarding
             var childCount = VisualTreeHelper.GetChildrenCount(elem);
             for (var i = 0; i < childCount; i++)
             {
-                var child = (FrameworkElement)VisualTreeHelper.GetChild(elem, i);
-                if (child != null) resultList.Add(child);
+                var childObj = VisualTreeHelper.GetChild(elem, i);
+                if (childObj is FrameworkElement)
+                {
+                    var child = (FrameworkElement)childObj;
+                    if (child != null) resultList.Add(child);
+                }
             }
             return resultList.Cast<TChild>().ToList();
         }

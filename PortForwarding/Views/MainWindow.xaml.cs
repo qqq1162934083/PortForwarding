@@ -40,7 +40,7 @@ namespace PortForwarding
             {
                 while (true)
                 {
-                    MappingMgr.Update();
+                    MappingMgr.Sync();
                     Thread.Sleep(10000);
                 }
             });
@@ -173,7 +173,7 @@ namespace PortForwarding
                 {
                     MappingMgr.AddMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
                 }
-                MappingMgr.Update();
+                MappingMgr.Sync();
             });
         }
 
@@ -208,7 +208,7 @@ namespace PortForwarding
                 {
                     MappingMgr.AddMapping(mapping.SrcIpAddr, mapping.SrcPort, mapping.DestIpAddr, mapping.DestPort);
                 }
-                MappingMgr.Update();
+                MappingMgr.Sync();
             });
         }
 
@@ -244,7 +244,7 @@ namespace PortForwarding
                 {
                     MappingMgr.RemoveMapping(mapping.SrcIpAddr, mapping.SrcPort);
                 }
-                MappingMgr.Update();
+                MappingMgr.Sync();
             });
         }
 
@@ -289,26 +289,44 @@ namespace PortForwarding
             {
                 MappingMgr.RemoveMapping(mapping.SrcIpAddr, mapping.SrcPort);
             }
-            MappingMgr.Update();
+            MappingMgr.Sync();
         }
 
+        /// <summary>
+        /// 同步概览视图中的行数据到模型中
+        /// 视图到DataContext的更新失效,原因未知,通过该方法同步值
+        /// </summary>
+        /// <returns></returns>
+        private void SyncMappingRowViewData2Data(DependencyObject children)
+        {
+            var dataGridCellsPanel = VisualTreeUtils.FindFirstParent<DataGridCellsPanel>(children);
+            var dataContext = dataGridCellsPanel.DataContext;
+            if (!(dataContext is PortForwardingMappingViewModel)) return;
+            var viewModel = (PortForwardingMappingViewModel)dataContext;
+            var dataGridCells = VisualTreeUtils.FindChildrens<DataGridCell>(dataGridCellsPanel);
+            viewModel.SrcIpAddr = dataGridCells[0].ChildrenAt<TextBox>(0, 0, 0, 0).Text;
+            viewModel.SrcPort = int.Parse(dataGridCells[1].ChildrenAt<TextBox>(0, 0, 0, 0).Text);
+            viewModel.DestIpAddr = dataGridCells[2].ChildrenAt<TextBox>(0, 0, 0, 0).Text;
+            viewModel.DestPort = int.Parse(dataGridCells[3].ChildrenAt<TextBox>(0, 0, 0, 0).Text);
+        }
+
+        private TextBox testTextBox = null;
         private void btn_mappingList_switchEditStatus_Click(object sender, RoutedEventArgs e)
         {
             var btn = (Button)sender;
             var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
 
+            var dataGridCellsPanel = VisualTreeUtils.FindFirstParent<DataGridCellsPanel>(btn);
+            var dataGridCells = VisualTreeUtils.FindChildrens<DataGridCell>(dataGridCellsPanel);
+            testTextBox = dataGridCells[1].ChildrenAt<TextBox>(0, 0, 0, 0);
+
             viewModel.Editing = !viewModel.Editing;
             if (!viewModel.Editing)//点击完成修改时,有可能是新增,有可能是修改
             {
-                //视图到DataContext的更新失效,原因未知,手动获取值
-                var dataGridCells = VisualTreeUtils.FindChildrens<DataGridCell>(VisualTreeUtils.FindFirstParent<DataGridCellsPanel>(btn));
-                viewModel.SrcIpAddr = dataGridCells[0].ChildrenAt<TextBox>(0, 0, 0, 0).Text;
-                viewModel.SrcPort = int.Parse(dataGridCells[1].ChildrenAt<TextBox>(0, 0, 0, 0).Text);
-                viewModel.DestIpAddr = dataGridCells[2].ChildrenAt<TextBox>(0, 0, 0, 0).Text;
-                viewModel.DestPort = int.Parse(dataGridCells[3].ChildrenAt<TextBox>(0, 0, 0, 0).Text);
+                SyncMappingRowViewData2Data(btn);
                 if (viewModel.IsNewData)//新增
                 {
-                    MappingMgr.Update();
+                    MappingMgr.Sync();
                     if (!MappingMgr.MappingList.Any(x => PortForwardingMappingComparer.IsSameMapping(x, new PortForwardingMappingModel
                     {
                         SrcIpAddr = viewModel.SrcIpAddr,
@@ -318,7 +336,7 @@ namespace PortForwarding
                     })))
                     {
                         MappingMgr.AddMapping(viewModel.SrcIpAddr, viewModel.SrcPort, viewModel.DestIpAddr, viewModel.DestPort);
-                        MappingMgr.Update();
+                        MappingMgr.Sync();
                     }
                     else
                     {
@@ -329,7 +347,7 @@ namespace PortForwarding
                 {
                     MappingMgr.RemoveMapping(viewModel.Mapping);
                     MappingMgr.AddMapping(viewModel.SrcIpAddr, viewModel.SrcPort, viewModel.DestIpAddr, viewModel.DestPort);
-                    MappingMgr.Update();
+                    MappingMgr.Sync();
                 }
             }
         }
@@ -343,8 +361,18 @@ namespace PortForwarding
         {
             var btn = (Button)sender;
             var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
-            MappingMgr.RemoveMapping(viewModel.Mapping);
-            MappingMgr.Update();
+            dataGrid_mappingList.Items.Remove(viewModel);
+            SyncMappingRowViewData2Data(btn);
+            MappingMgr.Sync();
+            if (MappingMgr.MappingList.Any(x => PortForwardingSrcMappingComparer.IsSameSrcMapping(new PortForwardingMappingModel
+            {
+                SrcIpAddr = viewModel.SrcIpAddr,
+                SrcPort = viewModel.SrcPort
+            }, x)))
+            {
+                MappingMgr.RemoveMapping(viewModel.Mapping);
+                MappingMgr.Sync();
+            }
         }
 
         private void btn_mappingList_newItem_Click(object sender, RoutedEventArgs e)
@@ -361,6 +389,42 @@ namespace PortForwarding
                 IsNewData = true
             };
             dataGrid_mappingList.Items.Insert(0, newItem);
+        }
+
+        private void dataGrid_mappingList_item_tab_keyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab)
+            {
+                var textBox = (TextBox)sender;
+                textBox.Text = textBox.Text.Replace("\t", string.Empty);
+                var cell = VisualTreeUtils.FindFirstParent<DataGridCell>(textBox);
+                var cellsPanel = VisualTreeUtils.FindFirstParent<DataGridCellsPanel>(textBox);
+                var cells = VisualTreeUtils.FindChildrens<DataGridCell>(cellsPanel);
+                var index = cells.IndexOf(cell);
+                index++;
+                if (index < cells.Count)
+                {
+                    try
+                    {
+                        var elem = cells[index].ChildrenAt<FrameworkElement>(0, 0, 0, 0);
+                        if(elem is TextBox)
+                        {
+                            var textBoxElem = (TextBox)elem;
+                            textBoxElem.Focus();
+                            textBoxElem.SelectAll();
+                        }
+                    }
+                    catch (Exception exp)
+                    {
+                        Console.WriteLine(exp.Message);
+                    }
+                }
+            }
+        }
+
+        private void HandleTest(object sender, RoutedEventArgs e)
+        {
+            testTextBox.Focus();
         }
     }
 }

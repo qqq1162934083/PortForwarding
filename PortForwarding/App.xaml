@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:PortForwarding"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
+        <local:ReadOnlyPerformanceConverter x:Key="ReadOnlyPerformanceConverter"/>
         <local:ConfigPanelCaseConverter x:Key="ConfigPanelCaseConverter"/>
         <local:MappingListCaseConverter x:Key="MappingListCaseConverter"/>
         <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>

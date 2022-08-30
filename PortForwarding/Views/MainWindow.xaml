@@ -31,28 +31,28 @@
                             <DataGridTemplateColumn Width="110" Header="IP地址" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBox IsReadOnly="{Binding Editing,Converter={StaticResource InverseBooleanConverter}}" Text="{Binding Path=SrcIpAddr}"/>
+                                        <TextBox x:Name="tbx_mappingList_srcIpAddr" AcceptsTab="True" KeyUp="dataGrid_mappingList_item_tab_keyUp" Background="{Binding ElementName=tbx_mappingList_srcIpAddr,Path=IsReadOnly,Converter={StaticResource ReadOnlyPerformanceConverter}}" IsReadOnly="{Binding Editing,Converter={StaticResource InverseBooleanConverter}}" Text="{Binding Path=SrcIpAddr}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn Width="60" Header="端口" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBox IsReadOnly="{Binding Editing,Converter={StaticResource InverseBooleanConverter}}" Text="{Binding Path=SrcPort}"/>
+                                        <TextBox x:Name="tbx_mappingList_srcPort" AcceptsTab="True" KeyUp="dataGrid_mappingList_item_tab_keyUp" Background="{Binding ElementName=tbx_mappingList_srcPort,Path=IsReadOnly,Converter={StaticResource ReadOnlyPerformanceConverter}}" IsReadOnly="{Binding Editing,Converter={StaticResource InverseBooleanConverter}}" Text="{Binding Path=SrcPort}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn Width="110" Header="IP地址" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBox IsReadOnly="{Binding Editing,Converter={StaticResource InverseBooleanConverter}}" Text="{Binding Path=DestIpAddr}"/>
+                                        <TextBox x:Name="tbx_mappingList_destIpAddr" AcceptsTab="True" KeyUp="dataGrid_mappingList_item_tab_keyUp" Background="{Binding ElementName=tbx_mappingList_destIpAddr,Path=IsReadOnly,Converter={StaticResource ReadOnlyPerformanceConverter}}" IsReadOnly="{Binding Editing,Converter={StaticResource InverseBooleanConverter}}" Text="{Binding Path=DestIpAddr}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn Width="60" Header="端口" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBox IsReadOnly="{Binding Editing,Converter={StaticResource InverseBooleanConverter}}" Text="{Binding Path=DestPort}"/>
+                                        <TextBox x:Name="tbx_mappingList_destPort" Background="{Binding ElementName=tbx_mappingList_destPort,Path=IsReadOnly,Converter={StaticResource ReadOnlyPerformanceConverter}}" IsReadOnly="{Binding Editing,Converter={StaticResource InverseBooleanConverter}}" Text="{Binding Path=DestPort}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -127,6 +127,12 @@
                 <StatusBarItem>
                     <TextBox Width="120" IsReadOnly="True" Background="Transparent" BorderThickness="0" Text="{Binding ElementName=window, Path=Version, StringFormat=Version {0}}"/>
                 </StatusBarItem>
+                <!--<StatusBarItem>
+                    <Button Click="HandleTest">测试</Button>
+                </StatusBarItem>
+                <StatusBarItem>
+                    <TextBox Width="100" x:Name="tbx_test"></TextBox>
+                </StatusBarItem>-->
             </StatusBar>
         </Grid>
     </Grid>

@@ -74,9 +74,9 @@ namespace PortForwarding
         }
 
         /// <summary>
-        /// 更新映射
+        /// 同步映射
         /// </summary>
-        public void Update()
+        public void Sync()
         {
             Load(true);
         }
