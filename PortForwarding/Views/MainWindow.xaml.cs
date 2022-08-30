@@ -90,7 +90,8 @@ namespace PortForwarding
         private void ReloadIpAddr()
         {
             var result = ConsoleUtils.GetCmdResult("ipconfig");
-            var parts = result.Split(new string[] { Environment.NewLine + Environment.NewLine }, StringSplitOptions.None).Select(x => x.Trim()).ToList();
+            result = result.Replace("\r\n", "\n");
+            var parts = result.Split(new string[] { "\n\n" }, StringSplitOptions.None).Select(x => x.Trim()).ToList();
             while (parts.Count > 0 && !Regex.IsMatch(parts[0], "^.*?适配器"))
             {
                 parts.RemoveAt(0);
@@ -105,7 +106,7 @@ namespace PortForwarding
                     adapterName = Regex.Match(adapterName, "(?<=适配器\\s).*?(?=:)").Value;
                     var itemDic = mappingDic[adapterName] = new Dictionary<string, string>();
                     var content = parts[i + 1];
-                    var contentItems = content.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                    var contentItems = content.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var contentItem in contentItems)
                     {
                         var splitIndex = contentItem.IndexOf(":");
@@ -123,7 +124,7 @@ namespace PortForwarding
                 {
                     textBuilder.AppendLine($"{keyValue.Key} -> {keyValue.Value[ipItemKeyName]}");
                 }
-                var text = Regex.Replace(textBuilder.ToString(), Environment.NewLine + "$", x => string.Empty);
+                var text = Regex.Replace(textBuilder.ToString(), "\n$", x => string.Empty);
                 Dispatcher.Invoke(() =>
                 {
                     if (tbx_adapterMappingIp.Text != text)
@@ -180,11 +181,12 @@ namespace PortForwarding
         private List<PortForwardingMappingModel> ReadConfigMappingList(string configFilePath)
         {
             var configContent = File.ReadAllText(configFilePath);
-            var configMappings = configContent.Split(new string[] { Environment.NewLine + Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+            configContent = configContent.Replace("\r\n", "\n");
+            var configMappings = configContent.Split(new string[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries)
             .Select(x => x.Trim())
             .Select(section =>
             {
-                var items = section.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
+                var items = section.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
                 if (items.Length != 4) throw new Exception("error config");
                 return new PortForwardingMappingModel()
                 {
@@ -221,11 +223,12 @@ namespace PortForwarding
 
                 //获取配置映射
                 var configContent = File.ReadAllText(r.FileName);
-                var configMappings = configContent.Split(new string[] { Environment.NewLine + Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                configContent = configContent.Replace("\r\n", "\n");
+                var configMappings = configContent.Split(new string[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.Trim())
                 .Select(section =>
                 {
-                    var items = section.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
+                    var items = section.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
                     if (items.Length != 4) throw new Exception("error config");
                     return new PortForwardingMappingModel()
                     {
@@ -310,17 +313,23 @@ namespace PortForwarding
             viewModel.DestPort = int.Parse(dataGridCells[3].ChildrenAt<TextBox>(0, 0, 0, 0).Text);
         }
 
-        private TextBox testTextBox = null;
         private void btn_mappingList_switchEditStatus_Click(object sender, RoutedEventArgs e)
         {
             var btn = (Button)sender;
             var viewModel = (PortForwardingMappingViewModel)btn.DataContext;
-
-            var dataGridCellsPanel = VisualTreeUtils.FindFirstParent<DataGridCellsPanel>(btn);
-            var dataGridCells = VisualTreeUtils.FindChildrens<DataGridCell>(dataGridCellsPanel);
-            testTextBox = dataGridCells[1].ChildrenAt<TextBox>(0, 0, 0, 0);
-
             viewModel.Editing = !viewModel.Editing;
+
+            //var dataGridCellsPanel = VisualTreeUtils.FindFirstParent<DataGridCellsPanel>(btn);
+            //var dataGridCells = VisualTreeUtils.FindChildrens<DataGridCell>(dataGridCellsPanel);
+            //testTextBox = dataGridCells[1].ChildrenAt<TextBox>(0, 0, 0, 0);
+
+            VisualTreeUtils.RecursiveFindChildrens(dataGrid_mappingList, x => x is Button button &&
+                (button.Name == "btn_mappingList_switchEditStatus" || button.Name == "btn_mappingList_removeItem" ||
+                button.Name == "btn_mappingList_newItem" || button.Name == "btn_mappingList_options"),
+                (a, b, c) => a.Count < dataGrid_mappingList.Items.Count * 2 + 2)
+                .Cast<Button>().ToList().ForEach(x => x.IsEnabled = !viewModel.Editing);
+            btn.IsEnabled = true;
+
             if (!viewModel.Editing)//点击完成修改时,有可能是新增,有可能是修改
             {
                 SyncMappingRowViewData2Data(btn);
@@ -349,6 +358,11 @@ namespace PortForwarding
                     MappingMgr.AddMapping(viewModel.SrcIpAddr, viewModel.SrcPort, viewModel.DestIpAddr, viewModel.DestPort);
                     MappingMgr.Sync();
                 }
+            }
+            else
+            {
+                //变灰
+
             }
         }
 
@@ -407,7 +421,7 @@ namespace PortForwarding
                     try
                     {
                         var elem = cells[index].ChildrenAt<FrameworkElement>(0, 0, 0, 0);
-                        if(elem is TextBox)
+                        if (elem is TextBox)
                         {
                             var textBoxElem = (TextBox)elem;
                             textBoxElem.Focus();
@@ -424,7 +438,8 @@ namespace PortForwarding
 
         private void HandleTest(object sender, RoutedEventArgs e)
         {
-            testTextBox.Focus();
+            var btn = (Button)VisualTreeUtils.RecursiveFindFirstChildren(dataGrid_mappingList, x => x is Button && ((Button)x).Name == "btn_mappingList_removeItem");
+            Console.WriteLine();
         }
     }
 }

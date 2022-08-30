@@ -128,26 +128,75 @@ namespace PortForwarding
         }
 
         /// <summary>
+        /// 递归获取视图元素中符合谓词条件的第一个子元素
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static DependencyObject RecursiveFindFirstChildren(DependencyObject obj, Predicate<DependencyObject> predicate)
+        {
+            return RecursiveFindChildrens(obj, predicate, (a, b, c) => !c).FirstOrDefault();
+        }
+
+        /// <summary>
         /// 递归获取视图元素中符合谓词条件所有的子元素
         /// </summary>
         /// <typeparam name="TChild"></typeparam>
         /// <param name="obj">用于提供查找的根元素</param>
         /// <param name="predicate">谓词检索表达式</param>
         /// <returns></returns>
-        public static List<TChild> RecursiveFindChildrens<TChild>(DependencyObject obj, Predicate<FrameworkElement> predicate)
-            where TChild : FrameworkElement
+        public static List<DependencyObject> RecursiveFindChildrens(DependencyObject obj, Predicate<DependencyObject> predicate, Func<List<DependencyObject>, DependencyObject, bool, bool> continuePredicate)
         {
-            var elem = Convert2FrameworkElement(obj);
-            var resultList = new List<FrameworkElement>();
-            var childrens = GetChildrens<FrameworkElement>(elem);
-            foreach (var child in childrens)
-            {
-                resultList.AddRange(RecursiveFindChildrens<FrameworkElement>(child, predicate));
-                if (predicate.Invoke(child)) resultList.Add(child);
-            }
-
-            return resultList.Cast<TChild>().ToList();
+            return RecursiveFindChildrensCore(obj, predicate, continuePredicate).ResultList;
         }
+        static RecursiveFindChildrensResult RecursiveFindChildrensCore(DependencyObject obj, Predicate<DependencyObject> predicate, Func<List<DependencyObject>, DependencyObject, bool, bool> continuePredicate)
+        {
+            var result = new RecursiveFindChildrensResult()
+            {
+                ResultList = new List<DependencyObject>(),
+                ContinueFind = true
+            };
+            var childCount = VisualTreeHelper.GetChildrenCount(obj);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(obj, i);
+                var predicateSuccess = predicate.Invoke(child);
+                if (predicateSuccess) result.ResultList.Add(child);
+                if (!continuePredicate.Invoke(result.ResultList, child, predicateSuccess))
+                {
+                    result.ContinueFind = false;
+                    return result;
+                }
+                var childFindResult = RecursiveFindChildrensCore(child, predicate, continuePredicate);
+                result.ResultList.AddRange(childFindResult.ResultList);
+                result.ContinueFind = childFindResult.ContinueFind;
+                if (!result.ContinueFind) return result;
+            }
+            return result;
+        }
+        class RecursiveFindChildrensResult
+        {
+            public List<DependencyObject> ResultList { get; set; }
+            public bool ContinueFind { get; set; }
+        }
+
+        /// <summary>
+        /// 获取视图元素的所有子元素
+        /// </summary>
+        /// <typeparam name="TChild"></typeparam>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static List<DependencyObject> GetChildrens(DependencyObject obj)
+        {
+            var resultList = new List<DependencyObject>();
+            var childCount = VisualTreeHelper.GetChildrenCount(obj);
+            for (var i = 0; i < childCount; i++)
+            {
+                resultList.Add(VisualTreeHelper.GetChild(obj, i));
+            }
+            return resultList;
+        }
+
 
         /// <summary>
         /// 获取视图元素的所有子元素

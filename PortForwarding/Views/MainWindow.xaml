@@ -81,7 +81,7 @@
                                     <Menu>
                                         <MenuItem Padding="0">
                                             <MenuItem.Header>
-                                                <Button IsHitTestVisible="False" Width="50">选项</Button>
+                                                <Button x:Name="btn_mappingList_options" IsHitTestVisible="False" Width="50">选项</Button>
                                             </MenuItem.Header>
                                             <MenuItem x:Name="menuItem_saveConfigAs" Header="配置另存为" Click="menuItem_saveConfigAs_Click"/>
                                             <MenuItem x:Name="menuItem_loadConfig" Header="加载配置" Click="menuItem_loadConfig_Click"/>
