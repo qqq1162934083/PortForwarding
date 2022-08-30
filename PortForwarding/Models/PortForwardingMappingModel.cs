@@ -9,9 +9,21 @@ namespace PortForwarding
 {
     public class PortForwardingMappingModel : INotifyPropertyChanged
     {
+        public string Name
+        {
+            get => _name; 
+            set
+            {
+                _name = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+            }
+        }
+        private string _name;
+
         public string SrcIpAddr
         {
-            get => _srcIpAddr; set
+            get => _srcIpAddr;
+            set
             {
                 _srcIpAddr = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SrcIpAddr)));

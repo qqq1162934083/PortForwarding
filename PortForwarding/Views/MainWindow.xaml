@@ -26,7 +26,7 @@
             <TextBox x:Name="tbx_adapterMappingIp" IsReadOnly="True" Grid.Row="1" AcceptsReturn="True"/>
             <TabControl Grid.Row="2" TabStripPlacement="Left">
                 <TabItem Header="概&#xD;&#xA;览&#xD;&#xA;视&#xD;&#xA;图">
-                    <DataGrid x:Name="dataGrid_mappingList" AutoGenerateColumns="False">
+                    <DataGrid x:Name="dataGrid_mappingList" AutoGenerateColumns="False" DataContextChanged="dataGrid_mappingList_DataContextChanged" LoadingRow="dataGrid_mappingList_LoadingRow">
                         <DataGrid.Columns>
                             <DataGridTemplateColumn Width="110" Header="IP地址" IsReadOnly="True">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -79,9 +79,9 @@
                             <DataGridTemplateColumn Width="64" IsReadOnly="True">
                                 <DataGridTemplateColumn.Header>
                                     <Menu>
-                                        <MenuItem Padding="0">
+                                        <MenuItem x:Name="menuItem_mappingList_options" Padding="0">
                                             <MenuItem.Header>
-                                                <Button x:Name="btn_mappingList_options" IsHitTestVisible="False" Width="50">选项</Button>
+                                                <Button IsHitTestVisible="False" Width="50">选项</Button>
                                             </MenuItem.Header>
                                             <MenuItem x:Name="menuItem_saveConfigAs" Header="配置另存为" Click="menuItem_saveConfigAs_Click"/>
                                             <MenuItem x:Name="menuItem_loadConfig" Header="加载配置" Click="menuItem_loadConfig_Click"/>
@@ -118,6 +118,7 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
+                            <DataGridTextColumn Width="auto" MinWidth="150" Header="备注" IsReadOnly="True" Binding="{Binding Path=Name}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </TabItem>

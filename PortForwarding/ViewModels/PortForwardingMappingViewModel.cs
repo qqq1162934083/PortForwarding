@@ -5,11 +5,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace PortForwarding
 {
     public class PortForwardingMappingViewModel : INotifyPropertyChanged
     {
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+            }
+        }
+        private string _name;
+
         public string SrcIpAddr
         {
             get => _srcIpAddr;
@@ -70,6 +82,12 @@ namespace PortForwarding
         public bool IsNewData { get; set; } = false;
 
         private bool _editing;
+        internal TextBox tbx_mappingList_srcIpAddr;
+        internal TextBox tbx_mappingList_srcPort;
+        internal TextBox tbx_mappingList_destIpAddr;
+        internal TextBox tbx_mappingList_destPort;
+        internal Button btn_mappingList_switchEditStatus;
+        internal Button btn_mappingList_removeItem;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -79,6 +97,7 @@ namespace PortForwarding
         {
             if (mapping != null)
             {
+                Name = mapping.Name;
                 SrcIpAddr = mapping.SrcIpAddr;
                 SrcPort = mapping.SrcPort;
                 DestIpAddr = mapping.DestIpAddr;

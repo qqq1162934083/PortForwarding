@@ -27,6 +27,8 @@ namespace PortForwarding
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region 视图
+        #endregion
         public string Version { get => Assembly.GetExecutingAssembly().GetName().Version.ToString(); set { } }
         public PortForwardingMappingManager MappingMgr { get; set; } = new PortForwardingMappingManager();
 
@@ -186,14 +188,16 @@ namespace PortForwarding
             .Select(x => x.Trim())
             .Select(section =>
             {
-                var items = section.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
-                if (items.Length != 4) throw new Exception("error config");
+                var itemList = section.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList();
+                if (itemList.Count < 4 || itemList.Count > 5) throw new Exception("error config");
+                if (itemList.Count == 4) itemList.Insert(0, string.Empty);//补全
                 return new PortForwardingMappingModel()
                 {
-                    SrcIpAddr = items[0],
-                    SrcPort = int.Parse(items[1]),
-                    DestIpAddr = items[2],
-                    DestPort = int.Parse(items[3])
+                    Name = itemList[0],
+                    SrcIpAddr = itemList[1],
+                    SrcPort = int.Parse(itemList[2]),
+                    DestIpAddr = itemList[3],
+                    DestPort = int.Parse(itemList[4])
                 };
             }).ToList();
             return configMappings;
@@ -324,10 +328,11 @@ namespace PortForwarding
             //testTextBox = dataGridCells[1].ChildrenAt<TextBox>(0, 0, 0, 0);
 
             VisualTreeUtils.RecursiveFindChildrens(dataGrid_mappingList, x => x is Button button &&
-                (button.Name == "btn_mappingList_switchEditStatus" || button.Name == "btn_mappingList_removeItem" ||
-                button.Name == "btn_mappingList_newItem" || button.Name == "btn_mappingList_options"),
-                (a, b, c) => a.Count < dataGrid_mappingList.Items.Count * 2 + 2)
+                (button.Name == "btn_mappingList_switchEditStatus" || button.Name == "btn_mappingList_removeItem"),
+                (a, b, c) => a.Count < dataGrid_mappingList.Items.Count * 2)
                 .Cast<Button>().ToList().ForEach(x => x.IsEnabled = !viewModel.Editing);
+            btn_mappingList_newItem.IsEnabled = !viewModel.Editing;
+            menuItem_mappingList_options.IsEnabled = !viewModel.Editing;
             btn.IsEnabled = true;
 
             if (!viewModel.Editing)//点击完成修改时,有可能是新增,有可能是修改
@@ -369,6 +374,8 @@ namespace PortForwarding
         private void btn_mappingList_refresh_Click(object sender, RoutedEventArgs e)
         {
             MappingMgr.Refresh();
+            btn_mappingList_newItem.IsEnabled = true;
+            menuItem_mappingList_options.IsEnabled = true;
         }
 
         private void btn_mappingList_removeItem_Click(object sender, RoutedEventArgs e)
@@ -399,10 +406,19 @@ namespace PortForwarding
                 DestPort = 0
             })
             {
-                Editing = true,
                 IsNewData = true
             };
             dataGrid_mappingList.Items.Insert(0, newItem);
+            //模拟点击
+            Task.Run(() =>
+            {
+                Thread.Sleep(1000);
+                Dispatcher.Invoke(() =>
+                {
+                    var btn = VisualTreeUtils.RecursiveFindFirstChildren(dataGrid_mappingList, x => x is Button button && button.DataContext == newItem);
+                    if (btn != null) btn_mappingList_switchEditStatus_Click(btn, null);
+                });
+            });
         }
 
         private void dataGrid_mappingList_item_tab_keyUp(object sender, KeyEventArgs e)
@@ -440,6 +456,29 @@ namespace PortForwarding
         {
             var btn = (Button)VisualTreeUtils.RecursiveFindFirstChildren(dataGrid_mappingList, x => x is Button && ((Button)x).Name == "btn_mappingList_removeItem");
             Console.WriteLine();
+        }
+
+        private void dataGrid_mappingList_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+        }
+
+        private void dataGrid_mappingList_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            //将视图绑定到viewModel
+            var rowPanelList = VisualTreeUtils.RecursiveFindChildrens(dataGrid_mappingList, x => x is DataGridCellsPanel, (a, b, c) => a.Count == dataGrid_mappingList.Items.Count)
+                .Cast<DataGridCellsPanel>().ToList();
+
+            foreach (var rowPanel in rowPanelList)
+            {
+                var viewModel = (PortForwardingMappingViewModel)rowPanel.DataContext;
+                if (viewModel == null) break;
+                viewModel.tbx_mappingList_srcIpAddr = (TextBox)rowPanel.FindName(nameof(viewModel.tbx_mappingList_srcIpAddr));
+                viewModel.tbx_mappingList_srcPort = (TextBox)rowPanel.FindName("tbx_mappingList_srcPort");
+                viewModel.tbx_mappingList_destIpAddr = (TextBox)rowPanel.FindName("tbx_mappingList_destIpAddr");
+                viewModel.tbx_mappingList_destPort = (TextBox)rowPanel.FindName("tbx_mappingList_destPort");
+                viewModel.btn_mappingList_switchEditStatus = (Button)rowPanel.FindName("btn_mappingList_switchEditStatus");
+                viewModel.btn_mappingList_removeItem = (Button)rowPanel.FindName("btn_mappingList_removeItem");
+            }
         }
     }
 }
