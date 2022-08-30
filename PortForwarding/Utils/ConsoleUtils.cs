@@ -22,7 +22,7 @@ namespace MyTool
         {
             var nowTime = DateTime.Now;
             var showDialog = false;//是否显示窗口运行
-            var batPath = Path.Combine(new FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName, Guid.NewGuid().ToString("N") + ".bat");
+            var batPath = Path.Combine(Path.GetTempPath(), Assembly.GetExecutingAssembly().GetName().Name + "_" + Guid.NewGuid().ToString("N") + ".bat");
             var batContentBuilder = new StringBuilder();
             if (!showDialog) batContentBuilder.AppendLine("@echo off");
             batContentBuilder.Append(cmd);
@@ -63,7 +63,7 @@ namespace MyTool
             {
                 if (File.Exists(batPath))
                     File.Delete(batPath);
-                    //FileSystem.DeleteFile(batPath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                //FileSystem.DeleteFile(batPath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
             }
         }
 
