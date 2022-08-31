@@ -226,22 +226,7 @@ namespace PortForwarding
                 var mappings = MappingMgr.MappingList;
 
                 //获取配置映射
-                var configContent = File.ReadAllText(r.FileName);
-                configContent = configContent.Replace("\r\n", "\n");
-                var configMappings = configContent.Split(new string[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .Select(section =>
-                {
-                    var items = section.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
-                    if (items.Length != 4) throw new Exception("error config");
-                    return new PortForwardingMappingModel()
-                    {
-                        SrcIpAddr = items[0],
-                        SrcPort = int.Parse(items[1]),
-                        DestIpAddr = items[2],
-                        DestPort = int.Parse(items[3])
-                    };
-                }).ToArray();
+                var configMappings = ReadConfigMappingList(r.FileName);
 
                 //获取交集
                 var toRemoveMappings = mappings.Intersect(configMappings, new PortForwardingSrcEqualityComparer()).ToArray();
